@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<fundamentos_sigdu>
+  <identidad>
+    <descripcion>
+    </descripcion>
+
+    <empresa>SIGDU</empresa>
+    <producto />
+    <dominio />
+  </identidad>
+
+
+  <lectura_obligatoria>
+    <archivo>guidelines/fundamentos.xml (este archivo)</archivo>
+    <archivo>prompts/guidelines/aprendizajes.xml</archivo>
+  </lectura_obligatoria>
+
+</fundamentos_nftydoor>

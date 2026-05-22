@@ -1,0 +1,64 @@
+Análisis y Síntesis 
+
+0 - mal -  No realiza un análisis
+adecuado de la información
+o falla en sintetizarla.
+1 - regular -Realiza un análisis básico y una
+síntesis aceptable pero
+incompleta.
+2- bien -Realiza un buen análisis y
+una síntesis adecuada de la
+información.
+3- excelente -Realiza un análisis profundo y
+una síntesis excelente de la
+información.
+
+Originalidad y Creatividad 
+
+El trabajo carece de
+originalidad o creatividad.
+El trabajo muestra algo de
+originalidad pero es
+mayormente convencional.
+El trabajo es original y
+muestra creatividad en varias
+partes.
+El trabajo es muy original y
+creativo en su totalidad.
+
+
+Redacción y Presentación 
+El trabajo está mal escrito
+y/o mal presentado.
+El trabajo está aceptablemente
+escrito y presentado pero con
+varios errores.
+El trabajo está bien escrito y
+presentado, con algunos
+errores menores.
+El trabajo está excelentemente
+escrito y presentado, sin errores.
+La exposición oral es
+impecable.
+
+Solución a una
+problemática UNSAM
+
+El trabajo trata cuestiones
+que no tienen absoluta
+relación con la comunidad
+UNSAM
+El trabajo trata cuestiones
+tangencialmente relacionadas
+con la UNSAM (territorio,
+comunidad, entorno)
+El trabajo trata cuestiones
+directamente relacionadas
+con la UNSAM, aunque de
+relevancia e impacto parcial
+(por ejemplo, solo alumnos).
+El trabajo trata una problemática
+actual, vigente, relevante para
+toda o parte importante de la
+comunidad UNSAM, en sus
+procesos centrales.
