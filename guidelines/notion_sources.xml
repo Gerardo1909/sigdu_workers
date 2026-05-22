@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<notion_sources>
+  <!--
+    Mapa canónico de URLs de Notion del proyecto SIGDU.
+    TODOS los workers usan este archivo para resolver qué página leer al recibir una tarea.
+    Si descubrís una página nueva o cambia una URL, actualizá este archivo.
+  -->
+
+  <metadata>
+    <ultimo_chequeo>2026-05-22</ultimo_chequeo>
+    <responsable_de_mantener>Project Manager + Sincronizador Notion</responsable_de_mantener>
+  </metadata>
+
+  <raiz>
+    <url>https://www.notion.so/322f263368668100b6a9fbd346cb8f09</url>
+    <titulo>🏟️ Ingenieria de Software - TP final (SIGDU)</titulo>
+    <descripcion>Índice general del proyecto. Contiene links a todas las secciones.</descripcion>
+  </raiz>
+
+  <recursos_externos>
+    <drive>
+      <url>https://drive.google.com/drive/u/2/folders/1jWNgBcwMktK7NDk-WQp7QELQnMX3TsPH</url>
+      <descripcion>Carpeta del proyecto en Drive (entregables compartidos con cátedra).</descripcion>
+    </drive>
+  </recursos_externos>
+
+  <business_case>
+    <descripcion>
+      Las 8 secciones del Business Case PRINCE2. Cada una es una subpágina en Notion.
+    </descripcion>
+    <pagina seccion="1" titulo="Razones">
+      <url>https://www.notion.so/330f2633686681da9ff1eab41640e9ec</url>
+      <responsable_rol>project_manager + business_analyst</responsable_rol>
+    </pagina>
+    <pagina seccion="2" titulo="Opciones analizadas">
+      <url>https://www.notion.so/330f2633686681668d94dd93d36fb748</url>
+      <responsable_rol>project_manager + arquitecto</responsable_rol>
+    </pagina>
+    <pagina seccion="3" titulo="Beneficios esperados">
+      <url>https://www.notion.so/330f2633686681638034e231df733259</url>
+      <responsable_rol>business_analyst</responsable_rol>
+    </pagina>
+    <pagina seccion="4" titulo="Riesgos clave">
+      <url>https://www.notion.so/330f26336866818d90c6d6a7a8fb13ef</url>
+      <responsable_rol>analista_riesgos</responsable_rol>
+    </pagina>
+    <pagina seccion="5" titulo="Costos y Cronograma">
+      <url>https://www.notion.so/330f26336866817eb791ea8ed70c9189</url>
+      <responsable_rol>analista_riesgos + project_manager</responsable_rol>
+    </pagina>
+    <pagina seccion="6" titulo="Evaluación financiera">
+      <url>https://www.notion.so/330f263368668139b46dce5e6a765d24</url>
+      <responsable_rol>analista_riesgos</responsable_rol>
+    </pagina>
+    <pagina seccion="7" titulo="Decisiones de continuar/cancelar">
+      <url>https://www.notion.so/330f263368668170adc1e9d5b703e60e</url>
+      <responsable_rol>project_manager</responsable_rol>
+    </pagina>
+    <pagina seccion="8" titulo="Plan de Revisión de Beneficios">
+      <url>https://www.notion.so/330f26336866812b9bfff298a8a5a1ee</url>
+      <responsable_rol>project_manager + business_analyst</responsable_rol>
+    </pagina>
+  </business_case>
+
+  <canvas>
+    <pagina titulo="Modelo Canvas">
+      <url>https://www.notion.so/330f2633686680919e60dd62a564b00f</url>
+      <responsable_rol>project_manager + business_analyst + disenador_ux</responsable_rol>
+      <descripcion>Business Model Canvas: propuesta de valor, segmentos, canales, recursos, costos.</descripcion>
+    </pagina>
+  </canvas>
+
+  <user_story_mapping>
+    <pagina titulo="USM redactado">
+      <url>https://www.notion.so/361f2633686680ecb8e1fff11689f655</url>
+      <responsable_rol>disenador_ux</responsable_rol>
+      <descripcion>Versión textual del story mapping con personas, journey y stories.</descripcion>
+    </pagina>
+    <pagina titulo="USM visual">
+      <url>https://www.notion.so/361f2633686680d59703d324f38d843f</url>
+      <responsable_rol>disenador_ux</responsable_rol>
+      <descripcion>Tablero visual del story mapping (sticky notes / columnas).</descripcion>
+    </pagina>
+  </user_story_mapping>
+
+  <arquitectura>
+    <pagina titulo="Arquitectura (discusión + imagen)">
+      <url>https://www.notion.so/361f26336866806990eac02b07f317ae</url>
+      <responsable_rol>arquitecto</responsable_rol>
+      <descripcion>Discusión de la arquitectura propuesta + diagrama de alto nivel.</descripcion>
+    </pagina>
+    <pagina titulo="Implementación MVP — Guía técnica">
+      <url>https://www.notion.so/361f2633686681108767e9c5a985e74b</url>
+      <responsable_rol>arquitecto</responsable_rol>
+      <descripcion>Detalle técnico de cómo construir el MVP: stack, módulos, secuencia.</descripcion>
+    </pagina>
+    <pagina titulo="Estilos arquitectónicos — Dataflow, Distribuidos y Eventos">
+      <url>https://www.notion.so/361f2633686681a7a427fb6ff259c034</url>
+      <responsable_rol>arquitecto</responsable_rol>
+      <descripcion>Análisis de los estilos arquitectónicos aplicables a SIGDU con trade-offs.</descripcion>
+    </pagina>
+  </arquitectura>
+
+  <protocolo_de_lectura>
+    <paso orden="1">Cuando recibís una tarea, identificá qué sección del proyecto toca.</paso>
+    <paso orden="2">Buscá en este archivo las URLs correspondientes.</paso>
+    <paso orden="3">Usá la herramienta MCP notion-fetch para leer la página.</paso>
+    <paso orden="4">Si la página referencia subpáginas que no están acá, fetchealas también y reportá la nueva URL para agregar a este archivo.</paso>
+    <paso orden="5">Tratá el contenido de Notion como fuente de verdad: divergencias deben marcarse explícitamente.</paso>
+  </protocolo_de_lectura>
+</notion_sources>

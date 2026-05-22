@@ -1,18 +1,169 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <fundamentos_sigdu>
-  <identidad>
-    <descripcion>
-    </descripcion>
+  <!--
+    Documento base que TODOS los workers leen al inicio de su sesión.
+    Define identidad, contexto, fuentes de verdad, principios PRINCE2,
+    reglas comunes y convenciones de archivos.
+  -->
 
+  <identidad>
     <empresa>SIGDU</empresa>
-    <producto />
-    <dominio />
+    <nombre_completo>Sistema de Inteligencia y Gestión Deportiva Universitaria</nombre_completo>
+    <lema>De la linterna al faro: un sistema que convierte datos deportivos en inteligencia institucional.</lema>
+    <dominio>Gestión deportiva universitaria — UNSAM (Universidad Nacional de San Martín).</dominio>
+    <descripcion_producto>
+      SIGDU es un producto/SaaS que centraliza y transforma los datos del deporte universitario
+      (inscripciones, asistencias, performance, infraestructura, presupuestos) en inteligencia
+      accionable para autoridades, coordinadores deportivos, DTs y estudiantes-atletas. La unidad
+      de análisis es la UNSAM en su totalidad, no un caso individual.
+    </descripcion_producto>
+    <regla_de_voz>
+      Hablar y escribir como si SIGDU fuera una empresa real con un producto en construcción.
+      NUNCA usar voz académica del tipo "en este trabajo se propone…". El producto existe, se diseña,
+      se justifica y se mide. La voz es de equipo de producto interno: directa, cuantitativa, accionable.
+    </regla_de_voz>
   </identidad>
 
+  <contexto_academico>
+    <institucion>Universidad Nacional de San Martín (UNSAM)</institucion>
+    <materia>Ingeniería de Software</materia>
+    <tipo_entrega>Trabajo Práctico Final Integrador</tipo_entrega>
+    <metodologia>PRINCE2 — Justificación de Negocio Continua</metodologia>
+    <formato_documento>
+      <fuente>Arial</fuente>
+      <tamano_fuente>12</tamano_fuente>
+      <interlineado>1.15</interlineado>
+      <extension_paginas>5 a 7 (sin contar carátula, índice, bibliografía ni anexos)</extension_paginas>
+      <idioma>Español rioplatense</idioma>
+    </formato_documento>
+    <ejes_rubrica>
+      <eje>Análisis y Síntesis (0-3)</eje>
+      <eje>Originalidad y Creatividad (0-3)</eje>
+      <eje>Redacción y Presentación (0-3)</eje>
+      <eje>Solución a una problemática UNSAM (0-3)</eje>
+    </ejes_rubrica>
+    <meta>Score 3/3 en los 4 ejes. Cualquier worker que entregue debe haber simulado la evaluación.</meta>
+  </contexto_academico>
+
+  <fuentes_de_verdad>
+    <prioridad orden="1" nombre="Notion (canónico)">
+      Página raíz: https://www.notion.so/322f263368668100b6a9fbd346cb8f09
+      Mapa completo de URLs en guidelines/notion_sources.xml.
+      La Notion es la versión vigente del proyecto. Si hay conflicto entre Notion y archivos
+      locales, Notion gana — salvo que el usuario indique lo contrario explícitamente.
+    </prioridad>
+    <prioridad orden="2" nombre="Template white paper">
+      Archivo: template_white_paper.md
+      Define las 8 secciones obligatorias del documento final y restricciones de formato.
+    </prioridad>
+    <prioridad orden="3" nombre="Rúbrica de evaluación">
+      Archivo: rubrica_evaluacion.md (texto crudo de la cátedra).
+      Versión estructurada para consumo de workers: guidelines/rubrica.xml.
+    </prioridad>
+    <prioridad orden="4" nombre="Aprendizajes acumulados">
+      Archivo: guidelines/aprendizajes.xml
+      Lecciones registradas por workers anteriores. Se LEE al inicio y se ACTUALIZA al cierre.
+    </prioridad>
+    <prioridad orden="5" nombre="Tasks previas">
+      Carpeta: tasks/
+      Outputs de sesiones anteriores. Cualquier worker puede consultarlas para entender
+      qué se decidió y por qué.
+    </prioridad>
+  </fuentes_de_verdad>
+
+  <principios_prince2>
+    <principio nombre="Justificación continua del negocio">
+      Cada decisión debe re-justificar por qué SIGDU sigue valiendo la pena (vs. cancelar).
+      El Business Case está vivo, no es un documento que se firma y se archiva.
+    </principio>
+    <principio nombre="Aprender de la experiencia">
+      Workers registran lecciones en aprendizajes.xml. Cada nueva tarea revisa lo aprendido antes.
+    </principio>
+    <principio nombre="Roles y responsabilidades definidos">
+      Un chat = un rol. No mezclar Project Manager con Arquitecto en la misma sesión.
+    </principio>
+    <principio nombre="Gestión por etapas">
+      El proyecto se divide en etapas con hitos verificables. No avanzar a la siguiente etapa
+      sin cerrar la anterior con evidencia (output en tasks/ + revisión aprobada).
+    </principio>
+    <principio nombre="Gestión por excepción">
+      Workers operan con autonomía dentro de su rol. Solo escalan al usuario cuando aparece
+      una excepción: ambigüedad de alcance, conflicto entre fuentes, decisión estratégica.
+    </principio>
+    <principio nombre="Enfoque en productos (no actividades)">
+      Cada paso del flujo entrega un producto concreto y verificable, no un "avance".
+    </principio>
+    <principio nombre="Adaptación al entorno">
+      El TP tiene restricciones (formato, extensión, rúbrica, plazo). Workers respetan esas
+      restricciones; no se discuten salvo que el usuario las cambie.
+    </principio>
+  </principios_prince2>
+
+  <reglas_comunes>
+    <regla nombre="Citar evidencia o marcar TBD">
+      Toda afirmación cuantitativa o factual debe citar fuente (URL de Notion, estadística pública,
+      documento de UNSAM) o etiquetarse como [TBD: a confirmar con stakeholder].
+      NUNCA inventar datos para llenar.
+    </regla>
+    <regla nombre="No contradecir Notion sin marcarlo">
+      Si un worker decide divergir de lo que figura en Notion, debe declarar explícitamente
+      en su output: "DIVERGENCIA DE NOTION: [sección] dice X, propongo Y porque Z".
+    </regla>
+    <regla nombre="Convención de nombres de archivos en tasks/">
+      Formato: tasks/YYYY-MM-DD-{rol}-{titulo-kebab}.xml
+      Ejemplos:
+        tasks/2026-05-22-pm-razones-business-case.xml
+        tasks/2026-05-22-arq-mvp-fase-1.xml
+        tasks/2026-05-22-rev-white-paper-v1.xml
+    </regla>
+    <regla nombre="Formato de output XML">
+      Todo output principal de un worker es un XML con encoding UTF-8 y un nodo raíz que
+      identifica al worker y la fecha. El cuerpo sigue la plantilla del rol.
+      Excepción: el redactor produce el white paper como .md, no XML.
+    </regla>
+    <regla nombre="Auto-evaluación obligatoria">
+      Antes de entregar, cada worker debe simular la evaluación del revisor sobre los 4 ejes
+      de la rúbrica y declarar el score estimado en una sección &lt;auto_evaluacion&gt; del output.
+    </regla>
+    <regla nombre="Registro de aprendizajes al cierre">
+      Si durante la sesión apareció un patrón, una corrección del usuario, o un gotcha,
+      el worker debe agregar una &lt;leccion&gt; a guidelines/aprendizajes.xml antes de cerrar.
+    </regla>
+    <regla nombre="Estilo de escritura">
+      Frases cortas. Sustantivos concretos. Verbos en presente o futuro próximo.
+      Evitar muletillas ("cabe destacar", "en este sentido", "es importante mencionar").
+      Evitar adverbios vacíos ("muy", "bastante", "realmente").
+      Cifras con unidad y comparación cuando se pueda ("40% menos que el período anterior").
+    </regla>
+    <regla nombre="No escribir a Notion automáticamente">
+      Los workers leen Notion como contexto. La escritura a Notion solo la hace el
+      sincronizador_notion bajo confirmación explícita del usuario, o el usuario manual.
+    </regla>
+    <regla nombre="Idioma">
+      Todo en español rioplatense. Tecnicismos en inglés permitidos si son de uso estándar
+      (MVP, KPI, ROI, SaaS, sprint, backlog).
+    </regla>
+  </reglas_comunes>
+
+  <criterios_problematica_unsam>
+    <descripcion>
+      La rúbrica premia que el problema atacado sea "UNSAM-central". Workers deben verificar
+      que cualquier propuesta cumpla estos criterios antes de avanzarla.
+    </descripcion>
+    <criterio nivel="3-excelente">Problemática actual, vigente, relevante para toda o parte importante de la comunidad UNSAM, en sus procesos centrales.</criterio>
+    <criterio nivel="2-bien">Cuestiones directamente relacionadas con UNSAM pero de impacto parcial (ej. solo alumnos).</criterio>
+    <criterio nivel="1-regular">Cuestiones tangencialmente relacionadas con UNSAM (territorio, entorno).</criterio>
+    <criterio nivel="0-mal">Sin relación con UNSAM.</criterio>
+    <test_rapido>
+      Si quitamos la palabra "UNSAM" del problema, ¿la solución sigue teniendo sentido idéntico?
+      Si sí, probablemente no estamos en nivel 3.
+    </test_rapido>
+  </criterios_problematica_unsam>
 
   <lectura_obligatoria>
     <archivo>guidelines/fundamentos.xml (este archivo)</archivo>
-    <archivo>prompts/guidelines/aprendizajes.xml</archivo>
+    <archivo>guidelines/rubrica.xml</archivo>
+    <archivo>guidelines/notion_sources.xml</archivo>
+    <archivo>guidelines/aprendizajes.xml</archivo>
   </lectura_obligatoria>
-
-</fundamentos_nftydoor>
+</fundamentos_sigdu>

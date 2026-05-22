@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rubrica>
+  <!--
+    Versión estructurada de rubrica_evaluacion.md, lista para ser consumida por workers
+    (especialmente revisor.xml) durante auto-evaluación y revisión formal.
+
+    Escala: 0 (mal) · 1 (regular) · 2 (bien) · 3 (excelente)
+    Meta del proyecto: 3 en los 4 ejes. El revisor NO aprueba con score < 2 en ningún eje.
+  -->
+
+  <metadata>
+    <fuente>rubrica_evaluacion.md — cátedra de Ingeniería de Software UNSAM</fuente>
+    <escala>0-3 por eje</escala>
+    <pesos>Cátedra no especificó pesos diferenciados. Asumir igual peso por eje.</pesos>
+    <meta_score>12/12 (3 en cada eje)</meta_score>
+    <umbral_aprobacion_interna>2 mínimo por eje. Score &lt; 2 obliga a iterar.</umbral_aprobacion_interna>
+  </metadata>
+
+  <eje nombre="Analisis y Sintesis" id="analisis">
+    <descripcion>
+      Capacidad del trabajo de profundizar en el problema, levantar evidencia, conectar causas
+      y consecuencias, y sintetizar la información en un argumento legible.
+    </descripcion>
+    <nivel score="0">No realiza un análisis adecuado de la información o falla en sintetizarla.</nivel>
+    <nivel score="1">Realiza un análisis básico y una síntesis aceptable pero incompleta.</nivel>
+    <nivel score="2">Realiza un buen análisis y una síntesis adecuada de la información.</nivel>
+    <nivel score="3">Realiza un análisis profundo y una síntesis excelente de la información.</nivel>
+    <senales_de_excelencia>
+      <senal>Cada afirmación cuantitativa cita fuente verificable.</senal>
+      <senal>Se identifican causas raíz, no solo síntomas.</senal>
+      <senal>Hay comparación con alternativas o el estado actual.</senal>
+      <senal>La síntesis no repite la evidencia, la condensa en una tesis accionable.</senal>
+      <senal>Se distinguen hechos de hipótesis.</senal>
+    </senales_de_excelencia>
+    <senales_de_baja_puntuacion>
+      <senal>Afirmaciones genéricas sin números ni fuentes.</senal>
+      <senal>Listas de datos sin conclusión.</senal>
+      <senal>Salto del problema a la solución sin diagnóstico intermedio.</senal>
+    </senales_de_baja_puntuacion>
+  </eje>
+
+  <eje nombre="Originalidad y Creatividad" id="originalidad">
+    <descripcion>
+      Mide cuánto el trabajo aporta una mirada propia: enfoque inesperado, combinación poco usual
+      de elementos, formulación de la solución que rompe con lo convencional.
+    </descripcion>
+    <nivel score="0">El trabajo carece de originalidad o creatividad.</nivel>
+    <nivel score="1">El trabajo muestra algo de originalidad pero es mayormente convencional.</nivel>
+    <nivel score="2">El trabajo es original y muestra creatividad en varias partes.</nivel>
+    <nivel score="3">El trabajo es muy original y creativo en su totalidad.</nivel>
+    <senales_de_excelencia>
+      <senal>La propuesta no es un "CRUD genérico para X": tiene una hipótesis no-obvia.</senal>
+      <senal>El enfoque combina al menos 2 disciplinas (ej. analytics + gamificación + gestión deportiva).</senal>
+      <senal>El nombre, la metáfora del producto y la narrativa son memorables y coherentes.</senal>
+      <senal>Las soluciones alternativas analizadas son reales, no straw-men.</senal>
+    </senales_de_excelencia>
+    <senales_de_baja_puntuacion>
+      <senal>Producto indistinguible de cualquier sistema de gestión genérico.</senal>
+      <senal>Justificaciones genéricas ("mejorará la eficiencia").</senal>
+    </senales_de_baja_puntuacion>
+  </eje>
+
+  <eje nombre="Redaccion y Presentacion" id="redaccion">
+    <descripcion>
+      Calidad del lenguaje escrito, organización visual del documento, ortografía, gramática,
+      uso de elementos gráficos. Incluye la exposición oral durante la defensa.
+    </descripcion>
+    <nivel score="0">El trabajo está mal escrito y/o mal presentado.</nivel>
+    <nivel score="1">El trabajo está aceptablemente escrito y presentado pero con varios errores.</nivel>
+    <nivel score="2">El trabajo está bien escrito y presentado, con algunos errores menores.</nivel>
+    <nivel score="3">El trabajo está excelentemente escrito y presentado, sin errores. La exposición oral es impecable.</nivel>
+    <senales_de_excelencia>
+      <senal>Cero errores de ortografía y gramática.</senal>
+      <senal>Estructura jerárquica clara (títulos, subtítulos, listas).</senal>
+      <senal>Cumple formato cátedra: Arial 12, interlineado 1.15, 5-7 páginas de contenido.</senal>
+      <senal>Diagramas/tablas tienen título, leyenda y se referencian desde el texto.</senal>
+      <senal>Ritmo de lectura: frases cortas alternadas con frases medianas. Sin párrafos kilométricos.</senal>
+      <senal>Vocabulario preciso. Sin muletillas ni adverbios vacíos.</senal>
+    </senales_de_excelencia>
+    <senales_de_baja_puntuacion>
+      <senal>Faltas de ortografía o concordancia.</senal>
+      <senal>Párrafos de más de 10 líneas.</senal>
+      <senal>Tablas/diagramas sin contexto.</senal>
+      <senal>Estilo informal en el WP (uso de "vos", "che", emojis).</senal>
+    </senales_de_baja_puntuacion>
+  </eje>
+
+  <eje nombre="Solucion a una problematica UNSAM" id="unsam">
+    <descripcion>
+      Grado en que el trabajo aborda una problemática real, central y vigente de la comunidad UNSAM.
+      Este es el eje más diferenciador de la cátedra: NO ALCANZA con que sea "algo universitario".
+    </descripcion>
+    <nivel score="0">El trabajo trata cuestiones que no tienen absoluta relación con la comunidad UNSAM.</nivel>
+    <nivel score="1">El trabajo trata cuestiones tangencialmente relacionadas con la UNSAM (territorio, comunidad, entorno).</nivel>
+    <nivel score="2">El trabajo trata cuestiones directamente relacionadas con la UNSAM, aunque de relevancia e impacto parcial (por ejemplo, solo alumnos).</nivel>
+    <nivel score="3">El trabajo trata una problemática actual, vigente, relevante para toda o parte importante de la comunidad UNSAM, en sus procesos centrales.</nivel>
+    <senales_de_excelencia>
+      <senal>El problema afecta a múltiples stakeholders (estudiantes + DTs + autoridades + administración).</senal>
+      <senal>Se cita evidencia específica de UNSAM (no datos genéricos del sector).</senal>
+      <senal>La solución toca un proceso central de la universidad, no un "extra".</senal>
+      <senal>Hay impacto medible declarado (KPIs concretos sobre la comunidad UNSAM).</senal>
+    </senales_de_excelencia>
+    <senales_de_baja_puntuacion>
+      <senal>"UNSAM" es intercambiable por cualquier universidad — la solución es genérica.</senal>
+      <senal>El problema afecta solo a un nicho (ej. solo el equipo de fútbol).</senal>
+      <senal>Sin evidencia de que el problema exista realmente en UNSAM hoy.</senal>
+    </senales_de_baja_puntuacion>
+  </eje>
+
+  <plantilla_scorecard>
+    <descripcion>Esquema que el revisor debe usar para emitir un veredicto.</descripcion>
+    <ejemplo>
+&lt;scorecard fecha="YYYY-MM-DD" target="path/al/artefacto"&gt;
+  &lt;score eje="analisis"&gt;2&lt;/score&gt;
+  &lt;score eje="originalidad"&gt;3&lt;/score&gt;
+  &lt;score eje="redaccion"&gt;2&lt;/score&gt;
+  &lt;score eje="unsam"&gt;3&lt;/score&gt;
+  &lt;total&gt;10/12&lt;/total&gt;
+  &lt;veredicto&gt;iterar | aprobar | rehacer&lt;/veredicto&gt;
+&lt;/scorecard&gt;
+    </ejemplo>
+  </plantilla_scorecard>
+</rubrica>
