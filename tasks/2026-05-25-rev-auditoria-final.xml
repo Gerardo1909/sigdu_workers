@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_worker fecha="2026-05-25" autor="project_manager" destinatario="revisor">
+  <titulo>Revisión cruzada y auto-evaluación final contra rúbrica</titulo>
+
+  <contexto>
+    Esta tarea se ejecuta DESPUÉS de que los tres workers anteriores hayan terminado:
+    - disenador_ux: output en tasks/2026-05-25-ux-output-usm-corregido.xml
+    - arquitecto: output en tasks/2026-05-25-arq-output-adr002-expandido.xml
+    - business_analyst: output en tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml
+
+    El revisor verifica coherencia cruzada de los outputs y emite el scorecard final.
+  </contexto>
+
+  <bloqueado_por>
+    <tarea>tasks/2026-05-25-ux-output-usm-corregido.xml</tarea>
+    <tarea>tasks/2026-05-25-arq-output-adr002-expandido.xml</tarea>
+    <tarea>tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml</tarea>
+  </bloqueado_por>
+
+  <entregables>
+
+    <entregable id="1" nombre="Verificación de coherencia cruzada">
+      <descripcion>
+        Revisar que los outputs de los tres workers sean coherentes entre sí:
+        - ¿El stack declarado por el arquitecto coincide con el usado en el Plan de Pruebas del BA?
+        - ¿El conteo de historias del UX coincide con la tabla de cobertura de arquitectura?
+        - ¿La decisión de E5.0 del UX está reflejada en las correcciones del BA (si aplica)?
+        - ¿Los churn rates y escenarios del BC corregido son coherentes internamente?
+        Reportar cualquier inconsistencia residual.
+      </descripcion>
+    </entregable>
+
+    <entregable id="2" nombre="Scorecard contra rúbrica">
+      <descripcion>
+        Emitir un scorecard completo con score estimado post-correcciones para los 4 ejes:
+        - Análisis y Síntesis (0-3)
+        - Originalidad y Creatividad (0-3)
+        - Redacción y Presentación (0-3)
+        - Solución a problemática UNSAM (0-3)
+
+        Para cada eje, citar la evidencia específica que justifica el score y lo que aún
+        está en riesgo de bajar de 3.
+      </descripcion>
+    </entregable>
+
+    <entregable id="3" nombre="Veredicto y lista de pendientes">
+      <descripcion>
+        Emitir veredicto: aprobar | iterar.
+        Si iterar: listar exactamente qué cambios adicionales se necesitan antes de la defensa.
+        Si aprobar: listar recomendaciones opcionales para la defensa oral (qué anticipar
+        como preguntas del evaluador y cómo responderlas).
+      </descripcion>
+    </entregable>
+
+  </entregables>
+
+  <instrucciones_de_trabajo>
+    <instruccion>Leer todos los outputs de los workers anteriores y el estado actual de Notion
+    (las páginas que fueron modificadas, via notion-fetch) antes de emitir el scorecard.</instruccion>
+    <instruccion>El revisor no modifica documentos — solo evalúa y reporta. Si encuentra algo
+    que necesita corrección, lo escala al worker correspondiente.</instruccion>
+    <instruccion>Simular el punto de vista del evaluador de la cátedra, no del equipo.
+    Ser crítico pero constructivo.</instruccion>
+  </instrucciones_de_trabajo>
+
+  <formato_output>
+    Archivo XML: tasks/2026-05-25-rev-output-scorecard-final.xml
+    Estructura:
+    - Checklist de coherencia cruzada (OK / ISSUE por punto)
+    - Scorecard con scores y justificaciones
+    - Veredicto
+    - Lista de anticipación para defensa oral (si veredicto = aprobar)
+  </formato_output>
+
+</tarea_worker>

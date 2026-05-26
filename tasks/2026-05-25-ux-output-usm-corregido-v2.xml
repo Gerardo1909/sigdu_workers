@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_ux fecha="2026-05-25" autor="disenador_ux">
+  <titulo>USM corregido v2 — handoff a sincronizador_notion clarificado</titulo>
+  <referencia_pm>tasks/2026-05-25-pm-auditoria-y-alineacion-general.xml</referencia_pm>
+  <referencia_revisor>tasks/2026-05-25-rev-output-scorecard-final.xml</referencia_revisor>
+  <referencia_version_previa>tasks/2026-05-25-ux-output-usm-corregido.xml</referencia_version_previa>
+
+  <alcance_de_esta_iteracion>
+    Esta v2 NO reemplaza el contenido analítico de la v1 (conteo verificado, resolución E5.0,
+    tabla maestra de 71 historias, reformulación A0, ACs R1, lista Planning Poker). Todo eso
+    sigue vigente y se referencia con &lt;referencia_version_previa&gt;.
+
+    Esta v2 corrige únicamente los dos puntos que el revisor identificó como responsabilidad
+    del disenador_ux en tasks/2026-05-25-rev-output-scorecard-final.xml:
+
+      - C8 (severidad baja, eje análisis): el cambio en la fila A2 de Arq §7 es semántico
+        (nota al pie/aclaración), no de diff literal. Un sincronizador buscando reemplazar
+        "E2.1–E2.8" por "E2.1–E2.8" no encontraría diferencia.
+      - C2 (observación de coherencia): la corrección "55 → 71" en Arquitectura §7 proviene
+        del bloque cambios_requeridos del UX, no del XML del arquitecto. El sincronizador
+        necesita saber de dónde viene esa instrucción para no esperar un input del arquitecto
+        que no llegará.
+  </alcance_de_esta_iteracion>
+
+  <!-- ============================================================
+       CORRECCIÓN 1 — Reescritura del bloque cambios_requeridos
+       de la resolución de E5.0 (Entregable 2 de la v1)
+       ============================================================ -->
+  <cambios_requeridos_corregidos seccion="resolucion_e50">
+    <cambio doc="USM redactado — A2 R1" tipo="eliminar_linea">
+      Eliminar la línea "E5.0 *(Admin)* Dar de alta una nueva disciplina al catálogo".
+      A2 R1 queda con: E2.1, E2.2, E2.3 (3 historias).
+    </cambio>
+
+    <cambio doc="USM redactado — A5 R1" tipo="insertar_linea">
+      Insertar "E5.0 *(Admin)* Dar de alta una nueva disciplina al catálogo" al inicio de A5 R1,
+      antes de E5.1. A5 R1 queda con: E5.0, E5.1, E5.2, E5.3, E5.4 (5 historias).
+    </cambio>
+
+    <cambio doc="Arquitectura §7 — tabla de cobertura — fila A2" tipo="nota_aclaratoria">
+      <atencion_sincronizador>
+        IMPORTANTE: el rango literal de la celda ("E2.1–E2.8") NO cambia. Lo que cambia es la
+        interpretación: en la versión actual el "8" implícito en E2.1–E2.8 contaba 8 historias
+        + E5.0 contado como pertenencia compartida. En la versión corregida, "E2.1–E2.8" son
+        8 historias propias de A2, sin E5.0.
+      </atencion_sincronizador>
+      <accion_concreta>
+        Si la tabla §7 ya tiene una nota al pie o columna de observaciones en la fila A2:
+        reemplazar su texto por "8 historias propias. E5.0 se reasignó a A5 por bounded context
+        (ver Entregable 2 de tasks/2026-05-25-ux-output-usm-corregido.xml)."
+        Si la tabla §7 NO tiene nota al pie en A2: agregar una con ese mismo texto.
+        En ningún caso editar el texto literal "E2.1–E2.8" de la celda.
+      </accion_concreta>
+    </cambio>
+
+    <cambio doc="Arquitectura §7 — tabla de cobertura — fila A5" tipo="nota_aclaratoria">
+      <accion_concreta>
+        Mantener el rango "E5.0–E5.10" (11 historias) tal cual. Si la tabla tiene nota al pie
+        en A5, asegurar que diga "Incluye E5.0 como historia R1 (creación de disciplinas)".
+        Si no la tiene, agregarla.
+      </accion_concreta>
+    </cambio>
+
+    <cambio doc="Arquitectura §7 — total declarado" tipo="reemplazo_textual">
+      <origen_del_cambio>
+        Este cambio proviene del bloque cambios_requeridos del XML del disenador_ux
+        (v1 — tasks/2026-05-25-ux-output-usm-corregido.xml, Entregable 1). El arquitecto NO
+        emitió esta corrección en su propio XML porque la divergencia 55↔71 se detectó del
+        lado del conteo de historias, no del lado del diseño arquitectónico. El sincronizador
+        debe aplicar esta corrección leyendo el XML del UX, no esperando uno del arquitecto.
+      </origen_del_cambio>
+      <accion_concreta>
+        En todo lugar de la página Arquitectura donde aparezca "las 55 historias",
+        "55 historias en total", "Total: 55" o variaciones, reemplazar por "71 historias"
+        o "Total: 71" según corresponda al contexto.
+      </accion_concreta>
+    </cambio>
+  </cambios_requeridos_corregidos>
+
+  <!-- ============================================================
+       CORRECCIÓN 2 — handoff_sugerido reemplazado
+       ============================================================ -->
+  <handoff_sugerido>
+    <siguiente_rol>sincronizador_notion</siguiente_rol>
+    <bloqueo_previo>
+      No aplicar nada en Notion hasta que el business_analyst cierre el pendiente C4
+      (re-mapear Plan de Pruebas §1.2 a taxonomía A0–A6 del USM). El revisor lo declaró
+      como alta-severidad y bloquea el sync.
+    </bloqueo_previo>
+
+    <instrucciones ordenadas="true">
+
+      <paso numero="1" doc="USM redactado">
+        Reemplazar "Total de historias: 55" por "Total de historias: 71".
+        Si el total no figura como texto literal, agregarlo en el encabezado de la página.
+      </paso>
+
+      <paso numero="2" doc="USM redactado — A2 R1">
+        Eliminar la línea de E5.0 ("Dar de alta una nueva disciplina al catálogo").
+        Verificar que A2 R1 quede con exactamente 3 historias: E2.1, E2.2, E2.3.
+      </paso>
+
+      <paso numero="3" doc="USM redactado — A5 R1">
+        Insertar E5.0 al inicio de A5 R1, antes de E5.1, con el enunciado reformulado
+        de la v1 (Entregable 3c, item 18): "Como administrador institucional, quiero dar
+        de alta una nueva disciplina en el catálogo de UNSAM…".
+        Verificar que A5 R1 quede con exactamente 5 historias: E5.0, E5.1, E5.2, E5.3, E5.4.
+      </paso>
+
+      <paso numero="4" doc="Arquitectura — texto corrido">
+        Reemplazar todas las apariciones de "55 historias" / "las 55 historias" / "Total: 55"
+        por "71 historias" / "las 71 historias" / "Total: 71". Origen del cambio: XML del UX
+        (este documento), NO XML del arquitecto. No esperar input adicional del arquitecto
+        para este punto.
+      </paso>
+
+      <paso numero="5" doc="Arquitectura §7 — tabla de cobertura, fila A2">
+        IMPORTANTE: el cambio NO es de diff literal. El rango "E2.1–E2.8" se mantiene tal cual
+        en la celda. Lo que se corrige es la nota al pie / observación asociada a esa fila.
+        - Si la fila A2 ya tiene una nota al pie u observación: reescribirla a
+          "8 historias propias. E5.0 se reasignó a A5 por bounded context — ver USM v1."
+        - Si la fila A2 NO tiene nota al pie u observación: agregar una con ese texto.
+        Un buscar-reemplazar literal sobre "E2.1–E2.8" NO encontrará nada que cambiar; eso
+        es esperado, no un error.
+      </paso>
+
+      <paso numero="6" doc="Arquitectura §7 — tabla de cobertura, fila A5">
+        Mantener el rango "E5.0–E5.10" sin cambios. Si la fila A5 no tiene una nota que
+        aclare que E5.0 está incluida como R1, agregarla: "Incluye E5.0 como R1 (creación
+        de disciplinas)".
+      </paso>
+
+      <paso numero="7" doc="USM visual o página enlazada">
+        Agregar los criterios de aceptación (DADO/CUANDO/ENTONCES) listados en el Entregable 3c
+        de la v1 como sub-ítems o página vinculada a cada una de las 25 historias del R1.
+      </paso>
+
+    </instrucciones>
+
+    <checklist_post_sync>
+      <item>USM redactado: el total declarado es 71. ✓</item>
+      <item>A2 R1: 3 historias (E2.1, E2.2, E2.3). ✓</item>
+      <item>A5 R1: 5 historias (E5.0, E5.1, E5.2, E5.3, E5.4). ✓</item>
+      <item>Arquitectura: ya no aparece "55" como total. ✓</item>
+      <item>Arq §7 fila A2: tiene nota al pie aclarando "8 historias propias, sin E5.0". ✓</item>
+      <item>Arq §7 fila A5: tiene nota al pie aclarando "Incluye E5.0 como R1". ✓</item>
+      <item>Las 25 historias R1 tienen ACs visibles en Notion. ✓</item>
+    </checklist_post_sync>
+  </handoff_sugerido>
+
+  <!-- ============================================================
+       AUTO-EVALUACIÓN DE ESTA ITERACIÓN
+       ============================================================ -->
+  <auto_evaluacion>
+    <nota>
+      Esta v2 es una corrección focalizada de handoff, no un re-trabajo del USM. La
+      auto-evaluación aplica solo a los puntos corregidos:
+    </nota>
+    <eje nombre="Análisis y Síntesis" score_estimado="3/3">
+      El revisor señaló (C8) que un sincronizador automático no detectaría el cambio en
+      fila A2 porque el texto literal coincide antes/después. La v2 explicita esa
+      condición y prescribe la acción concreta (editar la nota al pie, no la celda).
+      También explicita en C2 el origen del cambio "55→71" para evitar que el sincronizador
+      espere un input que el arquitecto no va a emitir.
+    </eje>
+    <eje nombre="Redacción y Presentación" score_estimado="3/3">
+      Cada paso del handoff tiene número, doc target, acción concreta y criterio de
+      verificación. El checklist post-sync permite validar el resultado sin re-leer el XML.
+    </eje>
+    <eje nombre="Originalidad y Creatividad" score_estimado="2/3">
+      Es una corrección defensiva, no creativa. Se acepta el score 2/3.
+    </eje>
+    <eje nombre="Solución a problemática UNSAM" score_estimado="3/3">
+      Sin cambios respecto de v1. El contexto UNSAM ya está embebido en los enunciados y
+      ACs heredados.
+    </eje>
+  </auto_evaluacion>
+
+  <leccion_a_registrar>
+    Registrar en guidelines/aprendizajes.xml un patrón sobre handoffs al sincronizador
+    cuando el cambio es semántico (nota al pie) y no de diff literal.
+  </leccion_a_registrar>
+</tarea_ux>

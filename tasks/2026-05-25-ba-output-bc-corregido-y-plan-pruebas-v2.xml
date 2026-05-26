@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_ba fecha="2026-05-25" autor="business_analyst" version="2">
+  <titulo>BC + Plan de Pruebas — Iteración 2 sobre observaciones del revisor (scorecard final)</titulo>
+  <referencia_pm>tasks/2026-05-25-pm-auditoria-y-alineacion-general.xml</referencia_pm>
+  <referencia_v1>tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml</referencia_v1>
+  <referencia_revisor>tasks/2026-05-25-rev-output-scorecard-final.xml</referencia_revisor>
+  <referencia_ux>tasks/2026-05-25-ux-output-usm-corregido.xml</referencia_ux>
+  <referencia_arq>tasks/2026-05-25-arq-output-adr002-expandido.xml</referencia_arq>
+
+  <!--
+    ============================================================
+    OBJETIVO DE ESTA ITERACIÓN
+    Cerrar los pendientes del revisor que dependen del BA:
+      C4 (alta)  — Re-mapear Plan §1.2 a taxonomía USM (A0–A6) y cubrir USM A2 + A5.
+      C4 (alta)  — Reforzar SEC-2 / SEC-3 con E5.0 (alta disciplinas) y E2.1 (catálogo público).
+      C9 (media) — Reemplazar "NOCIÓN" por "NOTION" en el XML del BA.
+      Calibración — Ajustar auto-evaluación al delta declarado por el revisor.
+    Los demás bloques del entregable original (correcciones E1-E5 del BC,
+    secciones 2/3/4/5/7 del Plan de Pruebas) NO se modifican: se asumen vigentes y
+    se referencian al archivo v1.
+    ============================================================
+  -->
+
+  <!-- ============================================================
+       CORRECCIÓN R1 — Plan de Pruebas §1.2 re-mapeado a taxonomía USM
+       Hallazgo cerrado: C4 (severidad alta)
+       ============================================================ -->
+  <correccion id="R1" target="Plan de Pruebas §1.2 — Alcance de las pruebas" hallazgo_revisor="C4">
+    <diagnostico_propio>
+      En la v1, el §1.2 reutilizó los códigos "A1 / A3 / A4 / A5" con un significado
+      propio del backend ("Autenticación / Inscripción / Asistencia / Reportes") que NO
+      coincide con la taxonomía oficial del USM (A0 Onboarding, A1 Acceso, A2 Catálogo,
+      A3 Participar, A4 Operar Clases, A5 Gestión Institucional, A6 Analizar Resultados).
+      Consecuencia: el alcance declarado omitía USM A2 (catálogo público, 3 historias R1)
+      y USM A5 (gestión institucional, 5 historias R1 incluyendo E5.0). El total (25)
+      coincidía por casualidad al colapsar USM A0+A1 dentro de "A1 BA". Un evaluador que
+      cruce USM con Plan de Pruebas detectaría la inconsistencia en la defensa oral.
+
+      La regla detrás: si el USM es la fuente canónica de unidades de trabajo, el Plan
+      de Pruebas debe usar SUS códigos, no inventar una taxonomía paralela. La taxonomía
+      backend puede vivir como agrupación interna del equipo, pero secundaria.
+    </diagnostico_propio>
+
+    <texto_corregido>
+      === REEMPLAZAR íntegramente §1.2 "Alcance de las pruebas" por el siguiente bloque ===
+
+      §1.2 Alcance de las pruebas
+
+      R1 MVP cubre las 25 historias del USM (release R1), distribuidas según la taxonomía
+      oficial de actividades del USM. Esta sección usa exclusivamente los códigos del USM
+      (A0–A6) para evitar ambigüedad con la organización interna del backend (ver tabla de
+      equivalencias §1.2-bis al final).
+
+      A0 — Onboarding Institucional (4 historias R1):
+        E0.1 Registrar nueva institución; E0.2 Crear admin institucional inicial;
+        E0.3 Garantizar aislamiento de datos por institución (multi-tenancy);
+        E0.4 Completar configuración inicial de la institución.
+        Pruebas: registro de tenant, creación de schema, alta de admin con validación de dominio,
+        configuración inicial obligatoria antes de habilitar el resto del sistema.
+
+      A1 — Acceso al Sistema (4 historias R1):
+        E1.1 Registrarse con email institucional; E1.2 Iniciar sesión;
+        E1.3 Recuperar contraseña por email; E1.4 Validar dominio del email institucional.
+        Pruebas: signup, login con JWT, recuperación de password, validación del dominio
+        contra la configuración del tenant.
+
+      A2 — Descubrir Oferta Deportiva (3 historias R1):
+        E2.1 Ver catálogo público sin login; E2.2 Ver detalle de actividad;
+        E2.3 Filtrar actividades por disciplina y/o sede.
+        Pruebas: endpoint público de catálogo (sin JWT), aislamiento del catálogo
+        por tenant (el catálogo público de T1 nunca puede listar disciplinas de T2),
+        filtros, paginación.
+
+      A3 — Participar en Actividades (3 historias R1):
+        E3.1 Inscribirse a actividad; E3.2 Recibir email de confirmación;
+        E3.3 Validar disponibilidad de cupo (incluye caso de concurrencia).
+        Pruebas: inscripción con cupo, race-condition sobre el último lugar, envío y
+        reintento de email, idempotencia de inscripción.
+
+      A4 — Operar Clases Diarias (3 historias R1):
+        E4.1 Ver lista de alumnos del día; E4.2 Registrar asistencia desde celular (QR);
+        E4.3 Confirmar guardado del registro.
+        Pruebas: render del listado por profesor, validación de QR contra ventana
+        temporal de la clase, sincronización offline-online del registro.
+
+      A5 — Gestión Institucional (5 historias R1):
+        E5.0 Alta de nueva disciplina al catálogo; E5.1 Asignar rol Profesor;
+        E5.2 Asignar rol Directivo; E5.3 Alta de nueva sede;
+        E5.4 Listado de usuarios con sus roles.
+        Pruebas: CRUD administrativo de disciplinas y sedes, asignación de roles con
+        validación de dominio institucional, listado restringido al tenant del solicitante.
+
+      A6 — Analizar Resultados (3 historias R1):
+        E6.1 Dashboard ejecutivo con KPIs; E6.2 Filtrar dashboard por disciplina;
+        E6.3 Exportar reporte mensual en Excel.
+        Pruebas: cálculo de KPIs sobre datos del tenant, filtros, exportación XLSX,
+        control de acceso restringido a Admin y Directivo.
+
+      A7 — Administrar Plataforma: 0 historias en R1 (vacío por diseño — un solo tenant
+      piloto). No se testea en R1.
+
+      Total R1: 4 (A0) + 4 (A1) + 3 (A2) + 3 (A3) + 3 (A4) + 5 (A5) + 3 (A6) = 25 historias.
+
+      Fuera de alcance en R1: pruebas de carga (R3), E2E automatizadas con navegador (R2),
+      integración con Google Calendar (R2), auditoría de seguridad formal (R3),
+      historias de A7 (R2/R3), todas las historias R2/R3 del resto de actividades.
+
+      === FIN REEMPLAZO §1.2 ===
+    </texto_corregido>
+
+    <texto_nuevo>
+      === AGREGAR nueva subsección §1.2-bis "Equivalencia con taxonomía interna del backend" ===
+
+      §1.2-bis Equivalencia entre la taxonomía del USM y la agrupación interna del backend
+
+      Por organización del equipo, internamente agrupamos historias por módulo de backend.
+      Esta agrupación NO sustituye a la taxonomía del USM; es solo una vista de implementación.
+      La tabla siguiente declara la equivalencia explícita para que un evaluador o un nuevo
+      integrante pueda mapear cualquier referencia entre los dos vocabularios.
+
+      | Módulo backend (interno)              | USM (canónico)         | Historias R1                          |
+      |---------------------------------------|------------------------|---------------------------------------|
+      | Tenants & Auth                        | A0 + A1                | E0.1, E0.2, E0.3, E0.4 (A0)           |
+      |                                       |                        | E1.1, E1.2, E1.3, E1.4 (A1)           |
+      | Catálogo público                      | A2                     | E2.1, E2.2, E2.3                      |
+      | Inscripciones                         | A3                     | E3.1, E3.2, E3.3                      |
+      | Operación de clases (asistencia)      | A4                     | E4.1, E4.2, E4.3                      |
+      | Gestión institucional                 | A5                     | E5.0, E5.1, E5.2, E5.3, E5.4          |
+      | Analytics / Reportes                  | A6                     | E6.1, E6.2, E6.3                      |
+      | Super-admin cross-tenant              | A7                     | (vacío en R1)                         |
+
+      Regla de citación: cuando una prueba o un criterio de aceptación menciona un código,
+      el código del USM tiene prioridad. Si por brevedad se menciona el módulo backend
+      ("módulo Inscripciones"), siempre que afecte a un release del USM se incluye también
+      la lista de historias USM cubiertas.
+
+      === FIN AGREGADO §1.2-bis ===
+    </texto_nuevo>
+
+    <verificacion_cobertura>
+      Verifico explícitamente las 25 historias R1 contra el §1.2 corregido:
+      - A0: E0.1, E0.2, E0.3, E0.4                     → 4 ✓
+      - A1: E1.1, E1.2, E1.3, E1.4                     → 4 ✓
+      - A2: E2.1, E2.2, E2.3                           → 3 ✓ (omisión v1 resuelta)
+      - A3: E3.1, E3.2, E3.3                           → 3 ✓
+      - A4: E4.1, E4.2, E4.3                           → 3 ✓
+      - A5: E5.0, E5.1, E5.2, E5.3, E5.4               → 5 ✓ (omisión v1 resuelta)
+      - A6: E6.1, E6.2, E6.3                           → 3 ✓
+      Total: 25 historias R1. Coincide con USM (UX) y con el Plan de Pruebas corregido.
+    </verificacion_cobertura>
+  </correccion>
+
+  <!-- ============================================================
+       CORRECCIÓN R2 — Refuerzo de SEC-2 y SEC-3 con E5.0 y E2.1
+       Hallazgo cerrado: C4 (pendiente operativo del revisor)
+       ============================================================ -->
+  <correccion id="R2" target="Plan de Pruebas §5.4 — Pruebas de seguridad básicas" hallazgo_revisor="C4-operativo">
+    <diagnostico_propio>
+      Las pruebas SEC-1, SEC-2 y SEC-3 de la v1 estaban formuladas sobre recursos genéricos
+      (un "recurso de T1", una "disciplina" sin más contexto). Si la suite de seguridad se
+      escribe a partir de esa formulación, puede omitir dos áreas críticas del MVP:
+      (a) la creación de disciplinas por parte de un admin (USM A5, historia E5.0), que es
+      el caso CRUD administrativo más cargado de datos sensibles del tenant; y (b) el
+      catálogo público (USM A2, historia E2.1), que es el único endpoint del R1 accesible
+      SIN JWT y por lo tanto el de mayor superficie de filtración de datos cross-tenant.
+      Reformulo las pruebas para que cubran explícitamente estos dos casos.
+    </diagnostico_propio>
+
+    <texto_corregido>
+      === REEMPLAZAR íntegramente §5.4 "Pruebas de seguridad básicas" por el siguiente bloque ===
+
+      §5.4 Pruebas de seguridad básicas
+
+      Incluimos cuatro pruebas de seguridad obligatorias en el pipeline CI desde R1.
+      Todas se ejecutan sobre un par de tenants de prueba (T1 = sigdu_test_a, T2 = sigdu_test_b)
+      con datos sintéticos y se recrean en cada ejecución del pipeline.
+
+      Prueba SEC-1 — Validación de JWT (cubre USM A1):
+        Caso 1: request con JWT expirado → 401.
+        Caso 2: request con JWT firmado para tenant T2 contra recurso del tenant T1 → 403.
+        Caso 3: request con JWT manipulado (firma inválida) → 401.
+        Caso 4: request a endpoint protegido sin Authorization header → 401.
+        Implementación: tests/security/test_jwt_validation.py.
+
+      Prueba SEC-2 — Aislamiento de search_path (cubre USM A5 y A3 — escritura cross-tenant):
+        Setup: crear T1 y T2 vacíos. Como admin de T1, dar de alta una disciplina
+        "Atletismo" (historia E5.0) y crear una actividad asociada.
+        Caso 1 — Lectura cross-tenant de disciplina (A5 ↔ A5):
+          Autenticarse como admin de T2 y consultar GET /disciplinas/{id_atletismo_T1}.
+          Esperado: 404 (la disciplina no existe en el schema de T2). NUNCA 200 con datos de T1.
+        Caso 2 — Escritura cross-tenant de inscripción (A3 ↔ A5):
+          Autenticarse como alumno de T2 y POST /inscripciones con el id de la actividad de T1.
+          Esperado: 404 (la actividad no existe en T2). NUNCA 201 con inscripción cruzada.
+        Caso 3 — search_path activo:
+          Durante la sesión autenticada como T2, ejecutar SHOW search_path; debe retornar
+          exclusivamente el schema de T2, sin "public" antes ni mención del schema de T1.
+        Caso 4 — Alta de disciplina respeta el schema del JWT:
+          Autenticarse como admin de T2 y POST /disciplinas con payload {"nombre":"Atletismo"}.
+          Esperado: 201 sobre el schema de T2; la disciplina "Atletismo" del schema de T1
+          permanece intacta (no se sobrescribe ni se duplica en T1).
+        Implementación: tests/security/test_tenant_isolation.py.
+        Criticidad: CUALQUIER fallo en SEC-2 es defecto CRÍTICO. Bloquea deploy.
+
+      Prueba SEC-3 — Catálogo público sin JWT (cubre USM A2, historia E2.1):
+        El catálogo es el único endpoint del R1 accesible sin Authorization header.
+        Debe estar tenant-scoped por subdominio o por path-param (ej. /t/{tenant_slug}/catalogo),
+        nunca por JWT.
+        Caso 1 — Aislamiento estricto:
+          T1 tiene disciplinas {Atletismo, Natación}; T2 tiene {Fútbol}. Sin JWT, hacer
+          GET /t/sigdu_test_a/catalogo. Esperado: solo Atletismo y Natación, NUNCA Fútbol.
+        Caso 2 — Tenant inexistente:
+          GET /t/tenant_que_no_existe/catalogo. Esperado: 404. NUNCA 500 con stack trace
+          que filtre nombres de schema reales.
+        Caso 3 — Path-traversal / SQLi sobre el slug:
+          GET /t/sigdu_test_a';DROP%20SCHEMA%20.../catalogo (input inválido).
+          Esperado: 400/404 sin ejecutar nada en BD. El test verifica que los schemas
+          de T1 y T2 sigan existiendo después de la request.
+        Caso 4 — Detalle de actividad de otro tenant por id:
+          GET /t/sigdu_test_a/actividades/{id_actividad_de_T2}.
+          Esperado: 404. NUNCA 200 con datos de T2.
+        Implementación: tests/security/test_public_catalog_isolation.py.
+        Criticidad: fallo aquí es defecto CRÍTICO (filtración pública es la peor exposición posible).
+
+      Prueba SEC-4 — IDOR sobre endpoints autenticados (cubre USM A3, A4 y A6):
+        Reemplaza la "SEC-3" de la v1 (acceso cross-tenant por ID manipulation).
+        Caso 1: alumno de T2 hace GET /actividades/{id_de_T1}. Esperado: 404.
+        Caso 2: profesor de T2 hace GET /clases/{id_clase_de_T1}/asistencia. Esperado: 404.
+        Caso 3: directivo de T2 hace GET /reportes/mensual?id_disciplina={id_de_T1}.
+        Esperado: 404 o reporte vacío sin filas; nunca filas con datos de T1.
+        Implementación: tests/security/test_idor_prevention.py.
+
+      === FIN REEMPLAZO §5.4 ===
+    </texto_corregido>
+
+    <verificacion_cobertura_seguridad>
+      Mapeo de pruebas de seguridad ↔ historias USM cubiertas (criterio: cada prueba
+      ejercita al menos una historia R1):
+      SEC-1 → USM A1 (E1.1, E1.2, E1.4).
+      SEC-2 → USM A5 (E5.0, E5.3), USM A3 (E3.1, E3.3).  [E5.0 explícitamente cubierto]
+      SEC-3 → USM A2 (E2.1, E2.2, E2.3).                  [E2.1 explícitamente cubierto]
+      SEC-4 → USM A3 (E3.1), USM A4 (E4.1, E4.2), USM A6 (E6.3).
+      Resultado: las 25 historias R1 quedan tocadas o por sus pruebas funcionales o por
+      al menos una prueba de seguridad. USM A2 y USM A5 ya no quedan fuera del régimen de
+      seguridad — corrección del gap principal del revisor.
+    </verificacion_cobertura_seguridad>
+  </correccion>
+
+  <!-- ============================================================
+       CORRECCIÓN R3 — Reemplazo del typo "NOCIÓN" por "NOTION"
+       Hallazgo cerrado: C9 (severidad media)
+       ============================================================ -->
+  <correccion id="R3" target="XML del BA — etiqueta interna" hallazgo_revisor="C9">
+    <diagnostico_propio>
+      En la v1, el bloque de decisión sobre churn (correccion id="E2") contenía la etiqueta
+      "DIVERGENCIA DE NOCIÓN DECLARADA", donde "NOCIÓN" debía ser "NOTION" (el sistema
+      donde residen los documentos canónicos). La etiqueta es interna al flujo de workers
+      — no llega a Notion — pero el patrón "DIVERGENCIA DE NOTION" se replica en outputs
+      de otros roles (arquitecto, PM) y conviene mantener la grafía homogénea para que
+      el grep entre artefactos siga funcionando.
+    </diagnostico_propio>
+
+    <reemplazo>
+      Aplicar reemplazo literal en el archivo v1
+      (tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml):
+        ANTES: "DIVERGENCIA DE NOCIÓN DECLARADA: BC §3 declaraba..."
+        DESPUÉS: "DIVERGENCIA DE NOTION DECLARADA: BC §3 declaraba..."
+      Ubicación: bloque &lt;decision_supuesto&gt; dentro de &lt;correccion id="E2"&gt;.
+      Es la única ocurrencia en el XML del BA.
+    </reemplazo>
+  </correccion>
+
+  <!--
+    ============================================================
+    PARTES NO MODIFICADAS — referencia explícita al v1
+    ============================================================
+  -->
+  <partes_sin_cambio_respecto_v1>
+    <bloque ref="correccion E1" estado="vigente">BC §1 — Reencuadre UNSAM-centricity. Revisor OK con riesgo declarado (TBD pendiente de PM).</bloque>
+    <bloque ref="correccion E2" estado="vigente_con_typo_corregido_en_R3">BC §3 y §6 — Alineación churn / escenarios. Solo cambia "NOCIÓN" → "NOTION".</bloque>
+    <bloque ref="correccion E3" estado="vigente">Canvas — Revenue Streams + Recursos Clave.</bloque>
+    <bloque ref="correccion E4" estado="vigente">BC §7 y §5 — Aclaración Mes 12.</bloque>
+    <bloque ref="correccion E5" estado="vigente">BC §8 — Stakeholder de revisión anual.</bloque>
+    <bloque ref="plan_pruebas §1.1, §1.3" estado="vigente">Introducción del Plan de Pruebas (solo §1.2 cambia, ver R1).</bloque>
+    <bloque ref="plan_pruebas §2" estado="vigente">Política de calidad — objetivos, criterios, umbrales, defectos.</bloque>
+    <bloque ref="plan_pruebas §3" estado="vigente">Roles y responsabilidades de los 4 integrantes.</bloque>
+    <bloque ref="plan_pruebas §4" estado="vigente">Estrategia de calidad — tipos, herramientas, datos, ambientes, priorización.</bloque>
+    <bloque ref="plan_pruebas §5.1, §5.2, §5.3, §5.5" estado="vigente">Revisiones de código, CI, regresión, usabilidad.</bloque>
+    <bloque ref="plan_pruebas §7" estado="vigente">Procedimientos de aprobación por release.</bloque>
+  </partes_sin_cambio_respecto_v1>
+
+  <!--
+    ============================================================
+    AUTO-EVALUACIÓN CALIBRADA
+    ============================================================
+  -->
+  <auto_evaluacion>
+    <nota_calibracion>
+      El revisor identificó tres divergencias de 1 punto entre mi auto-evaluación v1
+      (12/12) y su evaluación (9/12). Tomo la calibración del revisor como insumo y
+      reevalúo honestamente el delta que esta iteración v2 puede mover.
+    </nota_calibracion>
+
+    <score eje="analisis" v1_propio="3" v1_revisor="2" v2_propio="3">3</score>
+    <score eje="originalidad" v1_propio="3" v1_revisor="2" v2_propio="2">2</score>
+    <score eje="redaccion" v1_propio="3" v1_revisor="2" v2_propio="3">3</score>
+    <score eje="unsam" v1_propio="3" v1_revisor="3" v2_propio="3">3</score>
+    <total>11/12</total>
+
+    <justificacion>
+      Análisis (3): la causa raíz del gap señalado por el revisor era de taxonomía
+      paralela (vocabulario del backend vs vocabulario del USM). Esta iteración no
+      solo re-mapea §1.2: introduce §1.2-bis con tabla de equivalencias explícita
+      para que la divergencia no pueda reaparecer. SEC-2/SEC-3 quedan formulados
+      sobre historias concretas (E5.0, E2.1), no sobre "un recurso genérico".
+      El análisis baja a causa estructural ("¿por qué dos vocabularios?"), no se
+      queda en la corrección superficial.
+
+      Originalidad (2): asumo la baja del revisor. El Plan de Pruebas sigue siendo
+      higiene de QA bien ejecutada (separación dev/tester, SEC-2 sobre schema-per-tenant),
+      no introduce una hipótesis no-obvia. La tabla de equivalencias es defensiva, no
+      creativa. Para subir a 3 haría falta una hipótesis narrativa que es responsabilidad
+      del PM en la defensa oral (pendiente del revisor sobre "metáfora memorable").
+
+      Redacción (3): el §1.2 reescrito es más conciso que la v1, declara totales
+      verificables, y el §1.2-bis evita el problema de "dos códigos A1" que el revisor
+      marcó como falla de redacción. SEC-2/SEC-3 ahora son auditables paso a paso.
+      El typo NOCIÓN→NOTION queda corregido.
+
+      UNSAM (3): no cambia respecto a la v1. La corrección BC §1 sigue pasando el
+      test de rúbrica. El riesgo de los [TBD] del Área Deportiva permanece y es
+      pendiente operativo del PM, no del BA.
+
+      Total proyectado: 11/12. Subimos 2 puntos respecto al composite del revisor
+      (9 → 11) resolviendo C4 y C9. El punto que falta para 12/12 requiere intervención
+      narrativa de defensa oral, fuera del scope de este worker.
+    </justificacion>
+  </auto_evaluacion>
+
+  <!--
+    ============================================================
+    HANDOFF
+    ============================================================
+  -->
+  <handoff_sugerido>
+    <siguiente_rol>revisor</siguiente_rol>
+    <instrucciones>
+      Pedido al revisor: re-verificar coherencia con foco en C4 (taxonomía USM en §1.2,
+      tabla §1.2-bis, refuerzo SEC-2/SEC-3) y confirmar que el gap de USM A2 y USM A5
+      quedó cerrado. C9 es reemplazo literal, no requiere análisis.
+
+      Una vez aprobado por el revisor, el sincronizador_notion puede aplicar a Notion:
+        - Las correcciones E1-E5 del BC (sin cambios respecto a v1).
+        - El Plan de Pruebas completo, usando v2 para §1.2, §1.2-bis y §5.4, y v1 para el resto.
+      No publicar Notion antes de que el revisor confirme cierre de C4.
+    </instrucciones>
+    <pendientes_no_resueltos_por_este_worker>
+      - [PM] Confirmar [TBD] del BC §1 con referente del Área Deportiva UNSAM (riesgo eje UNSAM).
+      - [PM] Preparar elemento narrativo memorable para defensa oral (eje Originalidad).
+      - [UX] Aclarar en handoff a sincronizador_notion el cambio en Arq §7 fila A2 (nota al pie).
+    </pendientes_no_resueltos_por_este_worker>
+  </handoff_sugerido>
+
+</tarea_ba>

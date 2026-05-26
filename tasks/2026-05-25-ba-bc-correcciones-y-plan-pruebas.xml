@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_worker fecha="2026-05-25" autor="project_manager" destinatario="business_analyst">
+  <titulo>Correcciones del Business Case, Canvas y redacción del Plan de Pruebas de Software</titulo>
+
+  <contexto>
+    La auditoría detectó inconsistencias numéricas entre secciones del BC, un problema de
+    UNSAM-centricity que puede bajar el score en la rúbrica, y errores en el Canvas. Además,
+    la cátedra exige un Plan de Pruebas de Software (secciones 1-5 y 7, sin cronograma/presupuesto).
+    Esta tarea resuelve todos los hallazgos del BC y produce el Plan de Pruebas.
+  </contexto>
+
+  <hallazgos_que_resuelve>
+    <hallazgo ref="I1">BC §1 llama a UNSAM "piloto estratégico, no el mercado objetivo final".
+    Esto puede bajar el eje "Solución UNSAM" de 3/3 a 2/3 en la rúbrica.</hallazgo>
+    <hallazgo ref="I2">Inconsistencias numéricas entre §3 y §6: churn rate (target 5% en §3 vs
+    8.3% usado en §6) y escenario conservador (3 clientes en §3 vs 2 clientes en §6).</hallazgo>
+    <hallazgo ref="I3">Canvas proyecta "10 clientes Pro = $2,000 MRR" como conservador, que supera
+    al escenario optimista de BC §3 (12 clientes a $179 = $2,148).</hallazgo>
+    <hallazgo ref="M1">Brecha de 4 meses entre el cronograma de §5 (8 meses totales) y la
+    "revisión anual en Mes 12" de §7.</hallazgo>
+    <hallazgo ref="M2">BC §8 asigna la revisión anual a "Dirección de UNSAM" sin acuerdo formal
+    cuando UNSAM es un cliente piloto sin pago.</hallazgo>
+  </hallazgos_que_resuelve>
+
+  <entregables>
+
+    <entregable id="1" nombre="BC §1 — Reencuadre UNSAM-centricity">
+      <descripcion>
+        Reescribir el callout "UNSAM como piloto estratégico" para que NO diga explícitamente
+        que UNSAM no es el mercado objetivo. La narrativa correcta es:
+
+        ANTES: "UNSAM es el laboratorio de validación, no el cliente final."
+        DESPUÉS (sugerido): "SIGDU nace para resolver un problema real y documentado en UNSAM.
+        El éxito en UNSAM es la prueba de concepto que habilita la expansión a instituciones
+        con mayor capacidad de pago. UNSAM no es un cliente de conveniencia — es el caso
+        que da validez al problema."
+
+        Además, agregar en §1 al menos UN dato específico de UNSAM (puede ser una estimación
+        basada en la escala conocida del área deportiva, como número de disciplinas o
+        coordinadores aproximados). Si no hay datos exactos, etiquetar como [TBD: a confirmar
+        con stakeholder del área deportiva UNSAM].
+
+        Test de rúbrica post-corrección: si quitamos "UNSAM" del texto, ¿la solución pierde
+        especificidad? La respuesta debe ser SÍ (el diagnóstico menciona características
+        propias de la institución).
+      </descripcion>
+    </entregable>
+
+    <entregable id="2" nombre="BC §3 y §6 — Alineación de churn y escenarios">
+      <descripcion>
+        Elegir UN churn rate y usarlo consistentemente:
+        - Si el target es menos de 5% mensual (como dice §3), el LTV en §6 debe recalcularse:
+          LTV = $149/mes ÷ 0.05 = $2,980 (no $1,788 que usa 8.3%).
+        - Alternativamente, si 8.3% es el escenario base más realista, el target de §3 debe
+          ajustarse a "menos de 10% mensual" con una nota de que 5% es el objetivo a largo plazo.
+
+        Para los escenarios, alinear las definiciones:
+        - Conservador: misma definición en §3 y §6 (mismo número de clientes y precio).
+        - Propuesta: usar §6 como referencia (2 clientes a $99) y actualizar §3 para que coincida,
+          ya que §6 es posterior en el documento y probablemente refleja una revisión más cuidadosa.
+
+        Actualizar las tablas afectadas en §3 y §6. Documentar en cada tabla de cuál sección
+        proviene el supuesto base para evitar divergencias futuras.
+      </descripcion>
+    </entregable>
+
+    <entregable id="3" nombre="Canvas — Corrección de proyección">
+      <descripcion>
+        En la sección Revenue Streams del Canvas, reemplazar "10 clientes Pro en Año 1 = ~$2,000 USD/mes"
+        como proyección conservadora. Opciones:
+        - Opción A: cambiar "conservador" por "moderado" o "objetivo Año 2" y agregar el
+          escenario conservador real (alineado a BC §6: 2 clientes = $198 MRR).
+        - Opción B: eliminar la proyección del Canvas y referenciar BC §3: "Ver escenarios
+          en Business Case §3."
+
+        El Canvas debe ser coherente con el BC. No puede tener su propia proyección numérica
+        que contradiga el documento financiero.
+      </descripcion>
+    </entregable>
+
+    <entregable id="4" nombre="BC §7 y §5 — Resolución de brecha de meses">
+      <descripcion>
+        Agregar una nota en BC §7 o §5 que explique que "Mes 12" en §7 se refiere al primer
+        año de operación comercial post-lanzamiento, mientras que §5 describe el cronograma
+        de desarrollo (8 meses). El mes 12 de §7 cae a los 4 meses post-lanzamiento de la
+        Fase 5 de §5. Esta aclaración previene confusión en defensa oral.
+      </descripcion>
+    </entregable>
+
+    <entregable id="5" nombre="BC §8 — Stakeholder agreement para revisión anual">
+      <descripcion>
+        Reemplazar "Dirección de UNSAM" como responsable de la revisión anual (Mes 12) por
+        "Equipo SIGDU + referente del Área Deportiva UNSAM". Agregar una nota que diga que
+        el acuerdo de participación en las revisiones forma parte del convenio de piloto
+        a firmar con la institución antes del despliegue.
+        Esto hace el Plan de Revisión de Beneficios más creíble y operativo.
+      </descripcion>
+    </entregable>
+
+    <entregable id="6" nombre="Plan de Pruebas de Software">
+      <descripcion>
+        Redactar el Plan de Pruebas de Software con las siguientes secciones (EXCLUYENDO
+        la sección 6 Cronograma y Presupuesto, que la cátedra marcó en rojo):
+
+        1. INTRODUCCIÓN
+           - Propósito del documento
+           - Alcance de las pruebas (R1 MVP = los 25 módulos del sprint 1-7)
+           - Definiciones y referencias
+
+        2. POLÍTICA DE CALIDAD
+           - Objetivos de calidad del proyecto SIGDU
+           - Criterios de entrada y salida de cada fase de prueba
+           - Umbrales de cobertura de código (recomendado: ≥80% en módulos críticos)
+           - Política de gestión de defectos (severidades: crítico, alto, medio, bajo)
+
+        3. ROLES Y RESPONSABILIDADES
+           - Quién prueba qué en el equipo SIGDU (4 integrantes)
+           - Separación entre desarrollador y tester por módulo
+           - Responsable de CI/CD y ejecución de pipelines de prueba
+
+        4. ESTRATEGIA DE CALIDAD
+           - Tipos de prueba a aplicar: unitarias (pytest), integración (pytest + PostgreSQL real),
+             E2E (R2), rendimiento (R3)
+           - Herramientas: pytest, pytest-asyncio, factory-boy, httpx, ruff, mypy
+           - Estrategia de datos de prueba: fixtures de factory-boy con tenant SIGDU_TEST
+           - Estrategia de ambientes: local (Docker Compose) / staging / producción
+           - Criterio de priorización: historias de R1 tienen cobertura obligatoria antes de deploy
+
+        5. ACTIVIDADES DE CONTROL DE CALIDAD
+           - Revisiones de código (PR review obligatorio antes de merge a develop)
+           - Ejecución de CI en cada PR (GitHub Actions: lint + test)
+           - Pruebas de regresión antes de cada release
+           - Pruebas de seguridad básicas: validación de JWT, search_path isolation test,
+             prueba de acceso cross-tenant (intento de leer datos de otro tenant)
+           - Pruebas de usabilidad del MVP (sesión de usuario real con coordinador deportivo UNSAM)
+
+        7. PROCEDIMIENTOS DE APROBACIÓN
+           - Criterios de aprobación por release:
+             R1: CI verde + cobertura ≥80% en módulos A1, A3, A4 + prueba de aceptación con usuario real
+             R2: R1 aprobado + pruebas E2E sobre flujos críticos + NPS ≥30 en piloto
+             R3: R2 aprobado + pruebas de carga básicas + auditoría de seguridad
+           - Proceso de sign-off: quién aprueba (equipo SIGDU) y en qué condiciones
+           - Gestión de excepciones: defecto crítico encontrado en staging → bloquea deploy a producción
+
+        NOTA: El Plan de Pruebas debe hacer referencia al stack técnico real (Python/pytest/FastAPI)
+        y a la arquitectura schema-per-tenant (incluir casos de prueba específicos para validar
+        el aislamiento de datos entre tenants).
+      </descripcion>
+    </entregable>
+
+  </entregables>
+
+  <instrucciones_de_trabajo>
+    <instruccion>Leer primero: guidelines/fundamentos.xml, guidelines/rubrica.xml,
+    guidelines/aprendizajes.xml, BC §1-§8, Canvas (todas las secciones) y la imagen/slide
+    de la cátedra sobre el Plan de Pruebas (secciones 1-5 y 7 requeridas).</instruccion>
+    <instruccion>Para el Plan de Pruebas, hablar como equipo de producto en primera persona del
+    plural ("definimos", "ejecutamos"), no en voz académica ("se definirá", "se ejecutará").</instruccion>
+    <instruccion>El churn rate que elijas para alinear §3 y §6 debe quedar documentado en ambas
+    secciones con una nota explicativa del supuesto, para que el evaluador no piense que es error.</instruccion>
+    <instruccion>NO inventar datos específicos de UNSAM sin etiquetarlos como [TBD]. La rúbrica
+    penaliza afirmaciones sin fuente más que los TBD declarados.</instruccion>
+    <instruccion>Al cerrar, agregar una lección en guidelines/aprendizajes.xml sobre el riesgo
+    de tener proyecciones numéricas en el Canvas que no están sincronizadas con el BC.</instruccion>
+  </instrucciones_de_trabajo>
+
+  <criterios_de_exito>
+    <criterio>BC §1 tiene al menos 1 dato específico de UNSAM y el callout de "piloto estratégico"
+    no erosiona la centralidad UNSAM.</criterio>
+    <criterio>BC §3 y §6 usan el mismo churn rate con la misma definición de escenarios.</criterio>
+    <criterio>El Canvas no tiene proyecciones numéricas que superen al escenario optimista del BC.</criterio>
+    <criterio>BC §7/§5 tienen una nota que explica la diferencia entre el cronograma de desarrollo
+    y el cronograma de revisión de beneficios.</criterio>
+    <criterio>El Plan de Pruebas tiene las 6 secciones requeridas (1, 2, 3, 4, 5, 7) con
+    suficiente detalle para una defensa oral (no solo enumeraciones, sino criterios accionables).</criterio>
+  </criterios_de_exito>
+
+  <formato_output>
+    Archivo XML: tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml
+    Incluir:
+    - Texto exacto de cada corrección al BC (listo para pegar en Notion vía sincronizador)
+    - Texto completo del Plan de Pruebas de Software
+    - Auto-evaluación contra rúbrica (los 4 ejes)
+  </formato_output>
+
+  <dependencias>
+    <dependencia>Esperar el output del arquitecto (tasks/2026-05-25-arq-output-adr002-expandido.xml)
+    antes de finalizar las secciones del Plan de Pruebas que hacen referencia al stack de BD,
+    para asegurarse de que el stack declarado es consistente.</dependencia>
+  </dependencias>
+
+</tarea_worker>

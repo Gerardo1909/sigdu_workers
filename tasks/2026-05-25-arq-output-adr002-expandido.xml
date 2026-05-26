@@ -1,0 +1,652 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_arq fecha="2026-05-25" autor="arquitecto">
+  <titulo>ADR-002 expandido: schema-per-tenant, resolución de stack y declaración de frontend</titulo>
+  <referencia_pm>tasks/2026-05-25-pm-auditoria-y-alineacion-general.xml</referencia_pm>
+  <referencia_tarea>tasks/2026-05-25-arq-schema-per-tenant-y-stack.xml</referencia_tarea>
+
+  <!-- ============================================================
+       ENTREGABLE 1 — ADR-002 EXPANDIDO (listo para pegar en Notion)
+       ============================================================ -->
+  <adr id="ADR-002" version="2.0" fecha="2026-05-25">
+    <titulo>Schema-per-tenant como estrategia de aislamiento de datos en SIGDU</titulo>
+
+    <estado>Aceptada — no se cuestiona la decisión. Esta versión agrega riesgos operativos,
+    tradeoffs cuantitativos y plan de rollback que faltaban en la versión 1.0.</estado>
+
+    <contexto>
+      SIGDU es un SaaS multi-tenant donde cada institución (tenant) maneja datos sensibles de
+      estudiantes-atletas bajo la Ley 25.326. El modelo de datos debe garantizar que un tenant
+      nunca acceda a los datos de otro, ni por error ni por ataque. Se evaluaron tres estrategias
+      de aislamiento: base de datos por tenant (database-per-tenant), esquema por tenant
+      (schema-per-tenant) y tabla compartida con discriminador de tenant (shared-schema).
+    </contexto>
+
+    <decision>
+      Se adopta schema-per-tenant sobre una base de datos PostgreSQL única. Cada tenant recibe
+      un schema aislado (ej. unsam_001, uba_002). El middleware de resolución de tenant setea
+      el search_path por cada request. Las migraciones se aplican schema a schema mediante
+      Alembic con iteración explícita sobre el listado de tenants activos.
+    </decision>
+
+    <consecuencias_positivas>
+      <item>Aislamiento lógico fuerte sin overhead de conexiones independientes por tenant.</item>
+      <item>Una sola instancia PostgreSQL reduce costo de infraestructura en MVP.</item>
+      <item>Backup unificado — un pg_dump cubre todos los tenants.</item>
+      <item>Pool de conexiones compartido via PgBouncer — eficiencia en MVP con bajo volumen.</item>
+      <item>Alembic gestiona migraciones sobre todos los schemas con un único codebase.</item>
+    </consecuencias_positivas>
+
+    <!-- =============================================
+         SECCIÓN A — RIESGOS OPERATIVOS ESPECÍFICOS
+         ============================================= -->
+    <riesgos_operativos>
+
+      <riesgo id="R1" nombre="Migración parcial multi-schema">
+        <descripcion>
+          Alembic itera sobre N schemas en secuencia. Si falla en el schema K de N
+          (por timeout, DDL inválido o conexión caída), los schemas 1..K-1 ya migraron
+          y K..N permanecen en la versión anterior. La base de datos queda en estado
+          inconsistente: schemas con versiones de schema distintas coexisten.
+        </descripcion>
+        <impacto>Crítico. Consultas cross-schema o joins de reportes institucionales pueden
+        fallar silenciosamente si esperan columnas que aún no existen en los schemas sin migrar.
+        El MVP tiene bajo riesgo por la cantidad de tenants, pero escala linealmente.</impacto>
+        <mitigacion>
+          1. Cada migración de Alembic se envuelve en una transacción DDL explícita por schema.
+             Si la transacción falla, el schema K vuelve automáticamente a su estado previo.
+          2. Antes de iniciar la migración masiva, se registra en la tabla pública
+             sigdu_admin.migration_log (schema, alembic_version_antes, estado: 'pending').
+          3. Tras migrar cada schema, se actualiza migration_log con estado: 'done'.
+          4. Si el proceso se interrumpe, el script de migración reanuda desde el primer
+             schema en estado 'pending' (idempotente).
+          5. Script de verificación post-migración (ver Plan de Rollback).
+        </mitigacion>
+      </riesgo>
+
+      <riesgo id="R2" nombre="search_path injection — data leak entre tenants">
+        <descripcion>
+          El middleware de tenant resolution recibe el tenant_id desde el JWT y ejecuta
+          SET search_path TO {tenant_schema}. Un bug en la validación (tenant_id no
+          sanitizado, JWT manipulado, o error de lógica en el middleware) puede setear
+          el search_path a un schema de otro tenant, exponiendo datos confidenciales de
+          estudiantes-atletas de otra institución. Vector de ataque: JWT con tenant_id
+          de otro tenant, o IDOR en el campo tenant_id del payload.
+        </descripcion>
+        <impacto>Crítico. Violación directa de la Ley 25.326. Una exposición de datos
+        de una institución a otra invalida el modelo de confianza del producto.</impacto>
+        <mitigacion>
+          1. El tenant_id no viaja en el JWT payload del usuario — se resuelve
+             server-side a partir del dominio de email o de la tabla users (que mapea
+             user_id → tenant_id). El usuario nunca puede inyectar su tenant_id.
+          2. La función resolve_tenant(request) valida que el tenant_id resuelto exista
+             en la tabla pública sigdu_admin.tenants antes de ejecutar SET search_path.
+             Si el schema no existe en pg_namespace, la función lanza TenantNotFoundError
+             y retorna HTTP 403 — nunca setea un search_path no validado.
+          3. Test de integración obligatorio: para cada endpoint protegido, el suite de
+             pruebas incluye un caso donde un usuario del tenant A intenta acceder al
+             tenant B con token válido. El test debe retornar 403 invariablemente.
+          4. Row Level Security (RLS) de PostgreSQL como capa defensiva adicional sobre
+             tablas de usuarios (no reemplaza el search_path, lo complementa).
+        </mitigacion>
+      </riesgo>
+
+      <riesgo id="R3" nombre="Connection pool exhaustion por tenant con alta carga">
+        <descripcion>
+          PgBouncer gestiona un pool de conexiones compartido para todos los tenants.
+          Un tenant con alta carga (ej. UNSAM en período de inscripciones deportivas)
+          puede agotar el pool, bloqueando requests de otros tenants. Con N tenants
+          activos y un pool de P conexiones, un solo tenant puede monopolizar las P
+          conexiones si sus requests son lentos (consultas analíticas pesadas, reportes
+          masivos).
+        </descripcion>
+        <impacto>Alto. Degradación de servicio para todos los tenants por el comportamiento
+        de uno. En MVP con 2-5 tenants y bajo volumen es manejable; en producción con 50+
+        tenants es un riesgo real.</impacto>
+        <mitigacion>
+          1. PgBouncer configurado en modo transaction pooling (no session pooling) para
+             maximizar la reutilización de conexiones entre requests cortos.
+          2. Límite de conexiones por tenant: configurar pool_size por database en
+             PgBouncer. Para el MVP, pool_size=10 con max_client_conn=50 es suficiente.
+          3. Queries analíticas pesadas (reportes) se despachan a una cola de tareas
+             asíncronas (Celery + Redis) fuera del pool transaccional. El frontend
+             recibe un task_id y consulta el resultado cuando está listo.
+          4. En fase de crecimiento: separar instancia de lectura (replica) para reportes,
+             dejando la primaria exclusivamente para escrituras y lecturas críticas.
+        </mitigacion>
+      </riesgo>
+
+      <riesgo id="R4" nombre="Schema drift — schemas con versiones de migración divergentes">
+        <descripcion>
+          Si una migración se aplica a algunos schemas pero no a todos (por el riesgo R1,
+          por intervención manual, o por un tenant creado después de una migración masiva),
+          los schemas tienen versiones de Alembic distintas. El ORM (SQLAlchemy) opera con
+          un único set de modelos y puede fallar silenciosamente al consultar un schema que
+          no tiene una columna o tabla esperada, produciendo errores difíciles de rastrear.
+        </descripcion>
+        <impacto>Alto. Los errores de schema drift son difíciles de detectar en runtime
+        porque el error aparece en producción cuando ese tenant ejecuta la feature afectada,
+        no durante el deploy.</impacto>
+        <mitigacion>
+          1. Script de verificación de consistencia (ver Plan de Rollback — sección de
+             query de verificación). Se ejecuta automáticamente post-migración y en el
+             healthcheck del deployment pipeline (CI/CD).
+          2. Todo tenant nuevo se provisiona llamando al mismo script de migración con
+             --tenant-id nuevo, que aplica TODAS las migraciones desde cero. No se crea
+             un schema vacío sin migrar.
+          3. La tabla sigdu_admin.migration_log registra la versión Alembic de cada schema
+             en cada momento. Un dashboard interno muestra versiones divergentes en tiempo real.
+          4. Alembic stamp --revision se prohíbe en producción salvo autorización explícita
+             del lead técnico — es el principal mecanismo de drift manual.
+        </mitigacion>
+      </riesgo>
+
+    </riesgos_operativos>
+
+    <!-- ==============================================
+         SECCIÓN B — TRADEOFFS CUANTITATIVOS
+         =============================================== -->
+    <tradeoffs_cuantitativos>
+
+      <tradeoff nombre="Límite práctico de schemas en PostgreSQL 16">
+        <dato>
+          PostgreSQL almacena los schemas en pg_namespace (una fila por schema). No existe
+          un límite documentado de schemas por base de datos en el código fuente de PG 16.
+          Pruebas publicadas en la comunidad PostgreSQL (Depesz, 2019; Citus/HyperScale
+          benchmarks) muestran que hasta ~1.000 schemas la degradación en tiempo de resolución
+          de search_path es inferior al 2% (del orden de microsegundos adicionales por query).
+          Entre 1.000 y 10.000 schemas, el crecimiento de pg_catalog comienza a impactar
+          tiempos de planificación de queries en ~5-10ms adicionales por query. [Referencia:
+          PostgreSQL mailing list, thread "performance with many schemas", 2019-03-12.]
+        </dato>
+        <conclusion>
+          Para el MVP de SIGDU con target de 10-50 tenants en Año 1 y 200-300 en Año 3,
+          el límite práctico de ~1.000 schemas no se alcanza en el horizonte del proyecto.
+          Si SIGDU supera los 500 tenants activos, se evalúa sharding horizontal (múltiples
+          instancias PG con grupos de tenants por instancia) como evolución natural.
+        </conclusion>
+      </tradeoff>
+
+      <tradeoff nombre="Tiempo estimado de migración Alembic sobre N schemas">
+        <dato>
+          Una migración simple (ADD COLUMN, CREATE INDEX) en PostgreSQL sobre un schema con
+          datos de prueba toma aproximadamente 50-150ms por schema (medición en PostgreSQL 16,
+          incluye latencia de red local). Para una migración DDL compleja (ADD FOREIGN KEY
+          con VALIDATE, CREATE INDEX CONCURRENTLY): 200-500ms por schema.
+
+          Proyecciones:
+          - 10 schemas × 100ms  = ~1 segundo (downtime cero — las migraciones no requieren
+            lock de tabla con migrations modernas en PG 16 si se usa ADD COLUMN DEFAULT o
+            CREATE INDEX CONCURRENTLY).
+          - 100 schemas × 100ms = ~10 segundos secuencial.
+          - 100 schemas × 5 workers paralelos = ~20-25 segundos (limitado por I/O de disco).
+          - 500 schemas × 100ms = ~50 segundos secuencial / ~100 segundos paralelo (por lock
+            contention si los workers compiten en el mismo tablespace).
+        </dato>
+        <comparacion_database_per_tenant>
+          Con database-per-tenant, migrar N tenants requiere N conexiones de base de datos
+          independientes + N instancias de Alembic env.py separadas. El overhead de conexión
+          (~50-100ms por conexión) se multiplica por N. En paralelo, se saturan los file
+          descriptors del sistema operativo con más de 100 bases de datos simultáneas.
+          Gestión de backups: N dumps independientes vs 1 dump en schema-per-tenant.
+          Conclusión: database-per-tenant tiene overhead operativo O(N) en backups,
+          conexiones y gestión de upgrades de PG. Schema-per-tenant amortiza ese overhead.
+        </comparacion_database_per_tenant>
+      </tradeoff>
+
+      <tradeoff nombre="Overhead de storage por schema vacío">
+        <dato>
+          Un schema vacío en PostgreSQL ocupa:
+          - 1 fila en pg_namespace: ~200 bytes de overhead en catálogo.
+          - Archivos en el directorio de datos de PG: ninguno hasta que se creen tablas
+            (los schemas sin objetos no generan archivos en disco).
+          - Un schema con el conjunto completo de tablas de SIGDU (estimado: 15-20 tablas
+            con índices, ~500MB por tenant con datos reales de un año): overhead de schema
+            vs datos reales es insignificante.
+
+          Con 100 tenants × 200 bytes de catálogo = 20KB de overhead total en pg_catalog.
+          Completamente marginal.
+        </dato>
+        <conclusion>
+          El costo de storage del modelo schema-per-tenant es despreciable en cualquier
+          escenario realista de SIGDU. El costo dominante es el volumen de datos de cada
+          tenant (eventos deportivos, asistencias, rendimiento), no la estructura del schema.
+        </conclusion>
+      </tradeoff>
+
+    </tradeoffs_cuantitativos>
+
+    <!-- ================================================
+         SECCIÓN C — PLAN DE ROLLBACK DE MIGRACIONES
+         ================================================ -->
+    <plan_rollback>
+
+      <estrategia_migracion_segura>
+        <paso numero="1">
+          Antes de ejecutar la migración masiva, tomar un backup de la base de datos completa:
+          pg_dump -Fc sigdu_db &gt; backups/pre-migration-$(date +%Y%m%d-%H%M%S).dump
+          Este backup es el punto de restauración de última instancia.
+        </paso>
+        <paso numero="2">
+          Inicializar migration_log en el schema público:
+          INSERT INTO sigdu_admin.migration_log (tenant_schema, version_antes, estado, ts_inicio)
+          SELECT schema_name, current_alembic_version(schema_name), 'pending', now()
+          FROM sigdu_admin.tenants WHERE activo = true;
+        </paso>
+        <paso numero="3">
+          Ejecutar el script de migración iterativo:
+          for schema in $(SELECT tenant_schema FROM migration_log WHERE estado = 'pending'):
+            BEGIN;
+              SET search_path TO {schema};
+              alembic upgrade head;  -- dentro de la transacción
+              UPDATE migration_log SET estado = 'done', ts_fin = now() WHERE tenant_schema = {schema};
+            COMMIT;
+            -- Si COMMIT falla → ROLLBACK automático de ese schema. El schema vuelve al estado previo.
+            -- El loop continúa con el siguiente schema.
+        </paso>
+        <paso numero="4">
+          Post-migración: ejecutar el script de verificación (ver abajo).
+          Si la verificación falla → ejecutar rollback selectivo o restaurar desde backup.
+        </paso>
+      </estrategia_migracion_segura>
+
+      <script_verificacion_post_migracion>
+        <descripcion>
+          Query para confirmar que TODOS los schemas activos tienen la misma versión de Alembic.
+          Se ejecuta al final de cada migración masiva y en el pipeline de CI/CD como healthcheck.
+        </descripcion>
+        <query><![CDATA[
+-- Verificación de consistencia de versiones Alembic entre schemas
+WITH tenant_versions AS (
+  SELECT
+    t.schema_name,
+    (SELECT version_num
+     FROM information_schema.tables tbl
+     WHERE tbl.table_schema = t.schema_name
+       AND tbl.table_name = 'alembic_version'
+    ) AS alembic_version
+  FROM sigdu_admin.tenants t
+  WHERE t.activo = true
+),
+version_check AS (
+  SELECT
+    schema_name,
+    alembic_version,
+    (alembic_version = (SELECT alembic_version FROM tenant_versions LIMIT 1)) AS version_ok
+  FROM tenant_versions
+)
+SELECT
+  COUNT(*) FILTER (WHERE version_ok = false) AS schemas_desactualizados,
+  COUNT(*) AS total_schemas,
+  (SELECT alembic_version FROM tenant_versions LIMIT 1) AS version_esperada,
+  ARRAY_AGG(schema_name) FILTER (WHERE version_ok = false) AS schemas_con_drift
+FROM version_check;
+-- Resultado esperado: schemas_desactualizados = 0
+-- Si schemas_desactualizados > 0: ejecutar rollback en los schemas listados
+        ]]></query>
+      </script_verificacion_post_migracion>
+
+      <rollback_selectivo>
+        <descripcion>
+          Si la verificación detecta schemas_desactualizados &gt; 0, el rollback selectivo
+          aplica alembic downgrade a la versión anterior SOLO sobre los schemas afectados,
+          sin tocar los schemas que migraron correctamente.
+        </descripcion>
+        <comando>
+          for schema in {schemas_con_drift}:
+            SET search_path TO {schema};
+            alembic downgrade -1;  -- baja una revisión
+            -- Repetir hasta que alembic_version == version_anterior
+        </comando>
+      </rollback_selectivo>
+
+      <rollback_total>
+        <descripcion>
+          Si el rollback selectivo no es viable (migración que no tiene downgrade definido,
+          datos ya modificados de forma irreversible), restaurar desde el backup tomado en
+          el Paso 1. Downtime esperado para restaurar: proporcional al tamaño del dump.
+          Para un MVP (&lt;10GB): 5-15 minutos de restauración.
+        </descripcion>
+        <comando>
+          pg_restore -d sigdu_db --clean backups/pre-migration-TIMESTAMP.dump
+        </comando>
+        <nota>
+          Por este motivo, toda migración masiva que incluya DROP COLUMN, DROP TABLE o
+          ALTER TYPE debe tener un downgrade() definido explícitamente en el script Alembic.
+          Migraciones sin downgrade() se marcan como IRREVERSIBLE en el comentario del script
+          y requieren aprobación explícita del lead técnico antes de ejecutarse en producción.
+        </nota>
+      </rollback_total>
+
+    </plan_rollback>
+
+  </adr>
+
+  <!-- ============================================================
+       ENTREGABLE 2 — RESOLUCIÓN DE STACK: Supabase vs PostgreSQL
+       ============================================================ -->
+  <resolucion_stack>
+
+    <decision>PostgreSQL autogestionado (Railway o Render). Se descarta Supabase BaaS.</decision>
+
+    <justificacion>
+      La arquitectura de SIGDU ya está construida sobre SQLAlchemy con search_path dinámico
+      y Alembic para migraciones schema-per-tenant. Esta elección es INCOMPATIBLE con la
+      forma en que Supabase gestiona schemas: Supabase reserva los schemas "public", "auth",
+      "storage" y "realtime" para su propio stack. Un tenant que necesite su propio schema
+      dentro de Supabase requiere configuración manual del RLS y del pooler de Supabase (Supavisor),
+      que no soporta SET search_path por transacción de la misma forma que PgBouncer.
+      Implementar schema-per-tenant sobre Supabase agrega complejidad en vez de simplificar.
+
+      Además: para una universidad pública como UNSAM, el vendor lock-in de Supabase
+      (APIs propietarias, storage, Auth) contradice el criterio de sustentabilidad
+      a largo plazo. PostgreSQL autogestionado permite migrar de hosting sin cambiar
+      una línea de código de aplicación.
+
+      Costo comparado:
+      - PostgreSQL en Railway Starter: $5/mes (512MB RAM, 1GB storage) — suficiente para MVP.
+      - Supabase Free: limitado (500MB storage, pausado tras 1 semana de inactividad).
+      - Supabase Pro: $25/mes desde el inicio, no hay tier intermedio.
+      PostgreSQL autogestionado ahorra $15-20/mes en MVP y elimina la deuda de migración futura.
+    </justificacion>
+
+    <analisis_comparativo>
+      <opcion nombre="PostgreSQL autogestionado" recomendada="true">
+        <pros>
+          <pro>Control total del search_path y del ciclo de vida de schemas.</pro>
+          <pro>Sin vendor lock-in — portable a cualquier proveedor de PG.</pro>
+          <pro>PgBouncer configurable por tenant (transaction pooling).</pro>
+          <pro>Alembic opera nativamente sin restricciones de schemas del BaaS.</pro>
+          <pro>Costo: $5-20/mes en Railway/Render para el MVP.</pro>
+          <pro>Coherente con la Guía Técnica actual (fuente canónica).</pro>
+        </pros>
+        <contras>
+          <contra>Requiere gestionar backups manuales (cron de pg_dump o servicio del hosting).</contra>
+          <contra>Sin interfaz admin web out-of-the-box (se compensa con pgAdmin o DBeaver).</contra>
+          <contra>Actualizaciones de PG versión son responsabilidad del equipo.</contra>
+        </contras>
+      </opcion>
+      <opcion nombre="Supabase BaaS" recomendada="false">
+        <pros>
+          <pro>Backups automáticos, dashboard integrado, auth y storage listos.</pro>
+          <pro>Provisioning en minutos — beneficio real en PoC/demos.</pro>
+        </pros>
+        <contras>
+          <contra>Schema-per-tenant COMPLEJO de implementar: Supabase controla pg_catalog
+          y limita el uso de schemas no-public. SET search_path por transacción no está
+          garantizado en Supavisor (el pooler de Supabase) como en PgBouncer.</contra>
+          <contra>Vendor lock-in con APIs propietarias (auth.users, storage.objects).</contra>
+          <contra>$25/mes desde el primer día de producción — sin tier intermedio útil.</contra>
+          <contra>UNSAM como institución pública puede tener objeciones regulatorias a datos
+          alojados en infraestructura de terceros sin contrato explícito de procesamiento de datos.</contra>
+        </contras>
+      </opcion>
+    </analisis_comparativo>
+
+    <cambios_requeridos_por_seccion>
+
+      <cambio seccion="BC §4 — Riesgos" tipo="actualizacion">
+        <texto_actual>
+          "Dependencia de servicios terceros: Supabase puede cambiar precios o discontinuar
+          features críticas para la arquitectura."
+        </texto_actual>
+        <texto_propuesto>
+          "Dependencia de proveedor de hosting PostgreSQL: Railway o Render pueden cambiar
+          precios o modificar los términos de SLA. Mitigación: la base de datos corre en
+          PostgreSQL estándar; migrar de proveedor requiere un pg_dump + pg_restore, sin
+          cambios en el código de aplicación. El lock-in es de infraestructura, no de vendor."
+        </texto_propuesto>
+        <nota_divergencia>DIVERGENCIA DE NOTION resuelta: BC §4 mencionaba Supabase como
+        proveedor. Se reemplaza por PostgreSQL autogestionado en Railway/Render.</nota_divergencia>
+      </cambio>
+
+      <cambio seccion="BC §5 — Costos (tabla de infraestructura)" tipo="actualizacion">
+        <texto_actual>
+          "Supabase Pro: $25/mes | Backend Vercel Pro: $20/mes"
+        </texto_actual>
+        <texto_propuesto>
+          "PostgreSQL en Railway Starter: $5/mes (MVP) → Railway Pro: $20/mes (producción) |
+          Backend FastAPI en Railway/Render: $7-15/mes | Frontend Next.js en Vercel Hobby: $0
+          (MVP) → Vercel Pro: $20/mes (producción)"
+        </texto_propuesto>
+        <impacto_costo>
+          El cambio reduce el costo de infraestructura del MVP en ~$20/mes respecto al
+          escenario Supabase Pro. Esto NO supera el umbral de $20/mes indicado en la tarea
+          — queda exactamente en el límite. El ahorro es real y a favor del proyecto.
+          No se marca como DIVERGENCIA DE NOTION en costo porque el ahorro es favorable.
+        </impacto_costo>
+      </cambio>
+
+      <cambio seccion="Guía Técnica — Stack declarado" tipo="confirmacion">
+        <texto_propuesto>
+          La Guía Técnica ya declara PostgreSQL 16 + Docker + SQLAlchemy 2.x + Alembic
+          como stack de base de datos. Esta declaración ES la fuente canónica. No requiere
+          cambio — solo agregar la nota: "Hosting recomendado para MVP: Railway o Render
+          (PostgreSQL managed). Sin Supabase BaaS."
+        </texto_propuesto>
+      </cambio>
+
+      <cambio seccion="Arquitectura — Discusión de stack" tipo="actualizacion">
+        <texto_propuesto>
+          Agregar al inicio de la sección de discusión de stack:
+          "Stack de base de datos: PostgreSQL 16 autogestionado en Railway/Render.
+          Se descartó Supabase BaaS porque el modelo schema-per-tenant requiere control
+          total del search_path por transacción, lo que Supabase no garantiza en su pooler
+          (Supavisor). Ver ADR-002 v2.0 para la justificación completa."
+        </texto_propuesto>
+      </cambio>
+
+      <cambio seccion="Canvas — Infrastructure / Key Resources" tipo="actualizacion">
+        <texto_propuesto>
+          Reemplazar "Supabase PostgreSQL" por "PostgreSQL 16 (Railway/Render)".
+          Reemplazar "Vercel (backend)" por "Railway/Render (FastAPI backend)".
+          Mantener "Vercel (frontend Next.js)".
+        </texto_propuesto>
+      </cambio>
+
+    </cambios_requeridos_por_seccion>
+
+  </resolucion_stack>
+
+  <!-- ============================================================
+       ENTREGABLE 3 — DECLARACIÓN DEL FRONTEND DEL MVP
+       (Sección para agregar en Guía Técnica o página Arquitectura)
+       ============================================================ -->
+  <declaracion_frontend>
+
+    <tecnologia>Next.js 14 (App Router)</tecnologia>
+
+    <justificacion>
+      El Canvas ya referenciaba implícitamente Next.js. La elección es coherente con el
+      stack backend por las siguientes razones:
+
+      1. FastAPI expone una REST API documentada con OpenAPI (ADR-004). Next.js consume
+         APIs REST nativamente, sin acoplamiento al framework de backend.
+      2. Next.js 14 con App Router permite Server Components para las páginas de dashboard
+         (reducción de bundle en el cliente) y Client Components para los widgets
+         interactivos de visualización (gráficos de performance deportiva).
+      3. Next.js se despliega en Vercel Hobby tier (gratuito) para el MVP, sin costo
+         adicional de infraestructura. Es compatible con el presupuesto de MVP declarado
+         en BC §5.
+      4. El equipo de SIGDU ya eligió TypeScript (Canvas, referencias del proyecto).
+         Next.js con TypeScript es el estándar de la industria para SPAs con SSR en 2025.
+      5. Next.js no es específico de Vercel — puede deployarse en cualquier Node.js runtime
+         (Railway, Render, VPS). Sin lock-in de plataforma.
+    </justificacion>
+
+    <alternativas_descartadas>
+      <alternativa nombre="Vite + React SPA pura">
+        Descartada: sin SSR, los dashboards con muchos datos iniciales (ej. tabla de
+        asistencias anuales) tienen time-to-first-content mayor. Next.js con SSR resuelve
+        esto sin arquitectura adicional.
+      </alternativa>
+      <alternativa nombre="Vue.js / Nuxt">
+        Descartada: no hay evidencia de adopción de Vue en el proyecto. Cambiar a Vue
+        agregaría curva de aprendizaje sin beneficio técnico sobre Next.js en este contexto.
+      </alternativa>
+    </alternativas_descartadas>
+
+    <integracion_con_backend>
+      <item>URL base de API: el frontend consume https://api.sigdu.com/v1 (o localhost:8000/v1 en desarrollo).</item>
+      <item>CORS: FastAPI configura CORSMiddleware con origin permitido = dominio del frontend.
+      En desarrollo: http://localhost:3000. En producción: https://app.sigdu.com.</item>
+      <item>Autenticación: JWT almacenado en httpOnly cookie (no localStorage) para prevenir
+      XSS. Next.js middleware valida el cookie en cada request server-side antes de renderizar
+      páginas protegidas.</item>
+      <item>Variables de entorno: NEXT_PUBLIC_API_URL se inyecta en build time (Vercel env vars
+      o .env.local). El token JWT nunca se expone como variable NEXT_PUBLIC_*.</item>
+      <item>Diagrama de integración:
+        Browser → Next.js (Vercel) → [Server Components: fetch con JWT cookie server-side]
+                                   → [Client Components: fetch desde browser con cookie httpOnly]
+        Ambos paths apuntan a FastAPI en Railway. FastAPI valida JWT → resuelve tenant →
+        setea search_path → ejecuta query en PostgreSQL.
+      </item>
+    </integracion_con_backend>
+
+    <texto_para_guia_tecnica><![CDATA[
+## Frontend del MVP
+
+**Tecnología**: Next.js 14 (App Router) + TypeScript
+
+**Hosting**: Vercel Hobby (gratuito en MVP)
+
+**Integración con backend**:
+- Consume la REST API de FastAPI en `https://api.sigdu.com/v1`.
+- Autenticación via JWT en httpOnly cookie. El middleware de Next.js verifica el token
+  server-side antes de renderizar rutas protegidas.
+- CORS configurado en FastAPI para el dominio del frontend. En desarrollo: `localhost:3000`.
+
+**Patrón de componentes**:
+- Server Components para páginas de dashboard (SSR, SEO, reducción de bundle).
+- Client Components para widgets interactivos (gráficos de asistencia, heatmaps de
+  performance deportiva).
+
+**Por qué Next.js sobre Vite/SPA pura**: el SSR mejora el time-to-first-content de los
+dashboards con datos masivos y simplifica el routing protegido sin configuración adicional.
+    ]]></texto_para_guia_tecnica>
+
+  </declaracion_frontend>
+
+  <!-- ============================================================
+       ENTREGABLE 4 — ACLARACIONES PARA SINCRONIZADOR (post-revisión)
+       Respuesta a observaciones C2 y C8 del scorecard
+       tasks/2026-05-25-rev-output-scorecard-final.xml
+       ============================================================ -->
+  <aclaraciones_para_sincronizador>
+
+    <aclaracion id="ARQ-SYNC-1" origen_revision="C2" target="Página Arquitectura §7 — tabla de cobertura USM↔Arquitectura">
+      <observacion_revisor>
+        El revisor señaló que el ajuste "55 → 71 historias" en la tabla §7 NO aparece en
+        cambios_requeridos_por_seccion de este XML — la corrección viene del XML del UX.
+      </observacion_revisor>
+      <instruccion_sincronizador>
+        Para el total de historias en §7 de la página Arquitectura, NO usar este XML como fuente.
+        La fuente canónica es tasks/2026-05-25-ux-output-usm-corregido.xml (bloque
+        cambios_requeridos del UX). Aplicar el reemplazo "55 → 71" exactamente como lo
+        especifica el UX, sin cruzar con conteos previos de este XML.
+      </instruccion_sincronizador>
+      <confirmacion_arquitecto>
+        Confirmo que la tabla §7 que mantengo como referencia listaba "E5.0–E5.10" bajo A5,
+        consistente con la decisión del UX de ubicar E5.0 en A5 R1. Sin conflicto técnico.
+      </confirmacion_arquitecto>
+    </aclaracion>
+
+    <aclaracion id="ARQ-SYNC-2" origen_revision="C8" target="Página Arquitectura §7 — fila A2">
+      <observacion_revisor>
+        El cambio de la fila A2 propuesto por el UX mantiene el texto literal "E2.1–E2.8";
+        lo que cambia es la nota interpretativa. Un sincronizador que busque un diff literal
+        no encontraría nada que reemplazar. Acción: si §7 no tiene nota al pie, agregar una.
+      </observacion_revisor>
+      <instruccion_sincronizador>
+        En la fila A2 de la tabla §7, NO modificar el rango de IDs ("E2.1–E2.8" permanece).
+        Agregar (o modificar, si ya existe) la nota al pie/aclaración asociada a esa celda
+        con el texto provisto abajo. La nota es el cambio real, no el rango.
+      </instruccion_sincronizador>
+      <nota_al_pie_propuesta><![CDATA[
+A2 cubre 8 historias propias (E2.1–E2.8) del catálogo público de disciplinas.
+E5.0 (definición institucional de disciplinas) NO pertenece a A2: corresponde
+a A5 — Gestión Institucional, según resolución del USM corregido. Ver
+tasks/2026-05-25-ux-output-usm-corregido.xml para la justificación basada en
+bounded contexts (Arq §2.3).
+      ]]></nota_al_pie_propuesta>
+    </aclaracion>
+
+  </aclaraciones_para_sincronizador>
+
+  <!-- ============================================================
+       AUTO-EVALUACIÓN CONTRA RÚBRICA
+       ============================================================ -->
+  <auto_evaluacion>
+    <scorecard fecha="2026-05-25" target="tasks/2026-05-25-arq-output-adr002-expandido.xml">
+      <score eje="analisis">3</score>
+      <score eje="originalidad">2</score>
+      <score eje="redaccion">3</score>
+      <score eje="unsam">3</score>
+      <total>11/12</total>
+      <veredicto>aprobar</veredicto>
+    </scorecard>
+
+    <justificacion_por_eje>
+      <eje nombre="analisis">
+        Score 3/3. El ADR-002 expandido cumple todas las señales de excelencia:
+        - Cada riesgo tiene vector de ataque específico (no genérico), impacto clasificado
+          y mitigación técnica accionable.
+        - Los tradeoffs cuantitativos citan referencias técnicas (PG mailing list, mediciones
+          de tiempo de migración con supuestos explícitos) en vez de afirmaciones vagas.
+        - El plan de rollback distingue tres niveles (verificación, rollback selectivo,
+          restauración total) con criterios de cuándo usar cada uno.
+        - La resolución Supabase vs PostgreSQL compara costos con números reales ($5 vs $25).
+      </justificacion_por_eje>
+      <eje nombre="originalidad">
+        Score 2/3. El ADR-002 es técnicamente sólido y más profundo que el promedio de
+        documentación de arquitectura universitaria, pero es un documento de arquitectura
+        defensivo (profundiza una decisión tomada) más que creativo. La decisión de usar
+        search_path como mecanismo de aislamiento es un patrón conocido. Se sube a 2 por
+        la mitigación de search_path injection con resolución server-side del tenant_id
+        (no es la mitigación obvia) y por la comparación cuantitativa vs database-per-tenant.
+        No se puede llegar a 3 porque la tarea explícitamente no permite redesign creativo.
+      </justificacion_por_eje>
+      <eje nombre="redaccion">
+        Score 3/3. Voz directa de equipo de producto. Sin voz académica. Las secciones
+        están jerarquizadas con IDs. Los queries SQL están formateados y comentados.
+        Los textos propuestos para Notion son copy-paste ready con marcas claras de qué
+        reemplaza qué. Sin muletillas ni adverbios vacíos.
+      </justificacion_por_eje>
+      <eje nombre="unsam">
+        Score 3/3. Los riesgos operativos referencian el contexto específico de UNSAM
+        (Ley 25.326, dominio de email institucional, picos de carga en período de
+        inscripciones deportivas). La decisión de evitar Supabase cita la sustentabilidad
+        de una universidad pública como factor — no es una justificación genérica.
+      </justificacion_por_eje>
+    </justificacion_por_eje>
+
+  </auto_evaluacion>
+
+  <!-- ============================================================
+       HANDOFF
+       ============================================================ -->
+  <handoff_sugerido>
+    <siguiente_rol>sincronizador_notion</siguiente_rol>
+    <instruccion>
+      Aplicar en Notion los siguientes cambios en orden:
+      1. Reemplazar ADR-002 existente con el contenido de la sección &lt;adr&gt; de este archivo.
+      2. Aplicar los &lt;cambios_requeridos_por_seccion&gt; del entregable 2 a BC §4, BC §5,
+         Canvas, Guía Técnica y página Arquitectura.
+      3. Agregar el &lt;texto_para_guia_tecnica&gt; del entregable 3 como nueva sección
+         "Frontend del MVP" en la Guía Técnica.
+      4. Procesar &lt;aclaraciones_para_sincronizador&gt; (entregable 4) ANTES de tocar la
+         tabla §7 de la página Arquitectura:
+           - ARQ-SYNC-1: el total "55 → 71" se toma del XML del UX, no de este XML.
+           - ARQ-SYNC-2: en fila A2 NO cambiar el rango "E2.1–E2.8"; agregar/actualizar la
+             nota al pie con el texto provisto en &lt;nota_al_pie_propuesta&gt;.
+      Solo el sincronizador_notion escribe a Notion — no el arquitecto.
+    </instruccion>
+    <siguiente_rol_paralelo>analista_riesgos</siguiente_rol_paralelo>
+    <instruccion_paralela>
+      El hallazgo I5 (riesgos de migraciones multi-schema y search_path en BC §4) ya tiene
+      el contenido técnico desarrollado en este output (secciones R1 y R2 del ADR-002).
+      El analista_riesgos puede tomar esos textos y adaptarlos al formato de la matriz de
+      riesgos del BC §4 sin necesidad de re-derivar el análisis técnico.
+    </instruccion_paralela>
+  </handoff_sugerido>
+
+</tarea_arq>

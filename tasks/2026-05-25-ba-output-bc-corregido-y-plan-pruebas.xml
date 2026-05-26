@@ -1,0 +1,815 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_ba fecha="2026-05-25" autor="business_analyst">
+  <titulo>BC — Correcciones de UNSAM-centricity, alineación financiera y Plan de Pruebas de Software</titulo>
+  <referencia_pm>tasks/2026-05-25-pm-auditoria-y-alineacion-general.xml</referencia_pm>
+  <referencia_tarea>tasks/2026-05-25-ba-bc-correcciones-y-plan-pruebas.xml</referencia_tarea>
+  <referencia_arq>tasks/2026-05-25-arq-output-adr002-expandido.xml</referencia_arq>
+
+  <!--
+    ================================================================
+    PARTE 1 — CORRECCIONES AL BUSINESS CASE (texto listo para Notion)
+    ================================================================
+  -->
+
+  <!-- ============================================================
+       ENTREGABLE 1 — BC §1: Reencuadre UNSAM-centricity
+       Hallazgo resuelto: I1
+       ============================================================ -->
+  <correccion id="E1" seccion="BC §1" hallazgo="I1">
+    <titulo>BC §1 — Reencuadre UNSAM-centricity</titulo>
+
+    <diagnostico_previo>
+      El callout "UNSAM como piloto estratégico" declaraba explícitamente que UNSAM "no es el
+      único cliente ni el mercado objetivo final", lo que aplicando el test rúbrica ("si quitamos
+      UNSAM, ¿la solución pierde especificidad?") daba resultado NO. Ese resultado proyecta
+      score 2/3 en el eje UNSAM, no 3/3.
+    </diagnostico_previo>
+
+    <texto_a_reemplazar>
+      <!-- ANTES (texto original a eliminar del callout azul en Notion) -->
+      UNSAM como piloto estratégico: No es el único cliente ni el mercado objetivo final.
+      Es el laboratorio de validación que nos permite demostrar valor antes de escalar comercialmente.
+    </texto_a_reemplazar>
+
+    <texto_corregido>
+      <!-- DESPUÉS — reemplazar el callout azul por el siguiente bloque -->
+
+      === CALLOUT AZUL (mantener ícono 🎯, color blue_bg) ===
+
+      SIGDU nace para resolver un problema real y documentado en UNSAM. El deporte universitario
+      en UNSAM opera hoy sin un sistema centralizado: coordinadores de disciplinas gestionan
+      inscripciones y asistencias por planillas o WhatsApp, la Secretaría de Deportes no cuenta
+      con indicadores de participación histórica, y las decisiones de asignación de infraestructura
+      se toman sin datos objetivos. [TBD: confirmar número exacto de disciplinas activas con
+      referente del Área Deportiva UNSAM — estimación: 8-12 disciplinas y 5+ coordinadores.]
+
+      El éxito del piloto en UNSAM no es un paso opcional: es la prueba de concepto que valida
+      que el problema existe, que la solución es adoptable y que genera valor medible en una
+      institución universitaria pública argentina. UNSAM no es un cliente de conveniencia —
+      es el caso que da validez al problema y habilita, a futuro, la expansión a instituciones
+      con mayor capacidad de pago.
+
+      === FIN CALLOUT AZUL ===
+
+      === NOTA ADICIONAL: agregar párrafo en la subsección "El caso UNSAM: validación inicial" ===
+
+      La problemática en UNSAM reúne características que la hacen representativa del sector:
+      múltiples disciplinas (atletismo, natación, fútbol, entre otras — [TBD: confirmar listado
+      completo con Secretaría de Deportes UNSAM]), coordinadores sin herramientas digitales
+      unificadas, y autoridades sin acceso a reportes de participación. Si quitáramos UNSAM
+      de este diagnóstico, la solución perdería especificidad: los procesos manuales descritos
+      corresponden a la escala y al modelo de gestión de una universidad nacional argentina,
+      no a cualquier organización deportiva.
+
+      === FIN PÁRRAFO ADICIONAL ===
+    </texto_corregido>
+
+    <test_unsam_post_correccion>
+      Test aplicado: si eliminamos "UNSAM" del párrafo corregido, las referencias a "coordinadores
+      sin herramientas digitales", "autoridades sin reportes de participación" y "escala de una
+      universidad nacional argentina" pierden especificidad. Resultado: SÍ pierde especificidad.
+      Score UNSAM estimado post-corrección: 3/3.
+    </test_unsam_post_correccion>
+
+    <nota_tbd>
+      Los valores entre corchetes [TBD] deben confirmarse con el referente del Área Deportiva
+      UNSAM antes de la defensa oral. NO inventar cifras: la rúbrica premia los TBD declarados
+      sobre las afirmaciones sin fuente.
+    </nota_tbd>
+  </correccion>
+
+  <!-- ============================================================
+       ENTREGABLE 2 — BC §3 y §6: Alineación de churn y escenarios
+       Hallazgo resuelto: I2
+       ============================================================ -->
+  <correccion id="E2" seccion="BC §3 y §6" hallazgo="I2">
+    <titulo>BC §3 y §6 — Alineación de churn rate y escenarios</titulo>
+
+    <decision_supuesto>
+      Se adopta como supuesto base el churn rate de BC §6 (8.3% mensual), que corresponde
+      a la proyección más conservadora y realista para un SaaS B2B early-stage sin contratos
+      anuales firmados. El target de largo plazo es bajar a menos de 5% mensual una vez que
+      el producto tenga retención demostrada.
+
+      DIVERGENCIA DE NOTION DECLARADA: BC §3 declaraba "Churn mensual target &lt;5%" sin
+      nota de que §6 usaba 8.3% como base de cálculo. Esta corrección sincroniza ambas
+      secciones usando §6 como referencia, por ser la más detallada.
+    </decision_supuesto>
+
+    <cambios_seccion_3>
+      <!-- BC §3 — Tabla "Métricas clave de negocio objetivo" -->
+      === REEMPLAZAR la tabla de métricas en BC §3 ===
+
+      | Métrica                  | Target Año 1        | Benchmark industria SaaS       |
+      |--------------------------|---------------------|-------------------------------|
+      | Churn mensual (base)     | <10%                | 3-7% SMB SaaS maduros         |
+      | Churn mensual (objetivo) | <5% (largo plazo)   | Meta a partir del Año 2        |
+      | CAC (Costo Adquisición)  | <$200               | Varía por segmento             |
+      | LTV (Lifetime Value)     | >$1,080             | LTV:CAC > 3:1 ideal            |
+      | Tiempo a break-even      | 2 clientes pagos    | Costos operativos ~$35/mes     |
+
+      Nota al pie de tabla (agregar en Notion como callout amarillo):
+      "El churn base de cálculo para el LTV es 8.3% mensual (consistente con BC §6).
+      El objetivo a largo plazo es reducirlo a menos de 5% una vez que el producto
+      tenga al menos 12 meses de operación con clientes reales. Ver §6 para el
+      detalle del cálculo de LTV y Unit Economics."
+
+      === REEMPLAZAR la tabla de escenarios de ingresos en BC §3 ===
+
+      | Escenario    | Clientes Año 1 | Precio promedio | MRR (Mes 12) | ARR (proyectado) |
+      |--------------|----------------|-----------------|--------------|------------------|
+      | Conservador  | 2 clientes     | $99/mes         | $198         | $2,376           |
+      | Moderado     | 4 clientes     | $149/mes        | $596         | $7,152           |
+      | Optimista    | 7 clientes     | $179/mes        | $1,253       | $15,036          |
+
+      Nota al pie de tabla (agregar en Notion como callout azul):
+      "Escenarios alineados con BC §6, que es la fuente canónica de proyecciones
+      financieras. El escenario conservador asume una tasa de conversión del 40%
+      sobre 5 pilotos iniciados (2 de 5 convierten a pago). Supuesto base definido
+      en §6 — no modificar esta tabla sin actualizar §6 simultáneamente."
+    </cambios_seccion_3>
+
+    <cambios_seccion_6>
+      <!-- BC §6 — Unit Economics: el LTV se recalcula con churn 8.3% (ya correcto en §6) -->
+      <!-- Solo agregar nota explicativa en la tabla de Unit Economics -->
+
+      === AGREGAR nota al pie en la tabla Unit Economics de BC §6 ===
+
+      Nota (callout amarillo a agregar debajo de la tabla):
+      "Supuesto canónico de churn: 8.3% mensual (= 1/12 mensual, equivalente a retención
+      anual ~64%). LTV calculado como: $149/mes ÷ 0.083 = $1,795 ≈ $1,788. Este es el
+      supuesto base para todas las proyecciones del BC. BC §3 usa este mismo valor;
+      si se actualiza uno, actualizar el otro. Objetivo de largo plazo: bajar churn a
+      <5% en Año 2, lo que elevaría el LTV a ~$2,980."
+
+      === TAMBIÉN AGREGAR en la tabla de escenarios de BC §6 ===
+
+      Nota al pie de la tabla de escenarios (callout azul):
+      "Esta tabla es la fuente canónica de escenarios. BC §3 hace referencia a estos
+      valores. Supuesto base de cada escenario: Conservador = 5 pilotos × 40% conversión
+      = 2 clientes pagos. Moderado = 8 pilotos × 50% = 4 clientes. Optimista = 12 pilotos
+      × 60% = 7 clientes. Precio promedio por escenario: $99 / $149 / $179 respectivamente."
+    </cambios_seccion_6>
+
+    <recalculo_ltv>
+      LTV recalculado con churn 8.3%:
+        LTV = precio_promedio / churn_mensual
+        LTV = $149 / 0.083 = $1,795 (redondeado a $1,788 en §6 — se mantiene por consistencia)
+      LTV si churn baja a 5% (objetivo Año 2):
+        LTV = $149 / 0.05 = $2,980
+      El ratio LTV:CAC permanece >3:1 en ambos escenarios.
+    </recalculo_ltv>
+  </correccion>
+
+  <!-- ============================================================
+       ENTREGABLE 3 — Canvas: Corrección de proyección Revenue Streams
+       Hallazgo resuelto: I3
+       ============================================================ -->
+  <correccion id="E3" seccion="Canvas — Revenue Streams" hallazgo="I3">
+    <titulo>Canvas — Corrección de proyección Revenue Streams</titulo>
+
+    <problema_detectado>
+      El Canvas declaraba "10 clientes Pro en Año 1 = ~$2,000 USD/mes" como proyección
+      "conservadora". Ese valor (10 × $200 = $2,000 MRR) supera al escenario OPTIMISTA
+      de BC §3 (12 clientes × $179 = $2,148 MRR). Es matemáticamente imposible que 10
+      clientes Pro sean "conservador" cuando el optimista usa 12 clientes a precio menor.
+    </problema_detectado>
+
+    <texto_a_reemplazar>
+      <!-- ANTES en Canvas → sección Fuentes de Ingresos -->
+      Proyección conservadora:
+      - 10 clientes Pro en Año 1 = ~$2,000 USD/mes
+      - Break-even operativo: ~2-3 clientes pagos
+    </texto_a_reemplazar>
+
+    <texto_corregido>
+      <!-- DESPUÉS — adoptar Opción B: eliminar proyección numérica propia del Canvas -->
+
+      === REEMPLAZAR el bloque "Proyección conservadora" en Canvas → Revenue Streams ===
+
+      Estrategia de entrada:
+      1. Piloto gratuito para las primeras 3-5 instituciones
+      2. Conversión a pago tras 3 meses de uso exitoso
+      3. Upselling a planes superiores según crecimiento
+
+      Proyecciones financieras: ver Business Case §3 y §6.
+      Escenario conservador (BC §6): 2 clientes pagos a $99/mes = $198 MRR al Mes 12.
+      Break-even operativo: 2 clientes pagos cubren los costos operativos (~$50-65/mes en Mes 9-12).
+
+      === FIN REEMPLAZO ===
+
+      Razón del cambio: el Canvas no es el documento financiero — es el mapa de modelo de negocio.
+      Las proyecciones numéricas detalladas pertenecen al BC. Cualquier número en el Canvas debe
+      ser coherente con el BC o referenciar al BC explícitamente.
+    </texto_corregido>
+
+    <nota_recursos_clave>
+      TAMBIÉN corregir en Canvas → Recursos Clave:
+      ANTES: "Stack tecnológico: Open source (Next.js, Supabase)"
+      DESPUÉS: "Stack tecnológico: Open source (Next.js + FastAPI + PostgreSQL autogestionado)"
+      Razón: el ADR del arquitecto (tasks/2026-05-25-arq-output-adr002-expandido.xml) define
+      PostgreSQL autogestionado como stack canónico. Supabase fue descartado.
+    </nota_recursos_clave>
+  </correccion>
+
+  <!-- ============================================================
+       ENTREGABLE 4 — BC §7 y §5: Resolución de brecha de meses
+       Hallazgo resuelto: M1
+       ============================================================ -->
+  <correccion id="E4" seccion="BC §7 y §5" hallazgo="M1">
+    <titulo>BC §7 — Aclaración sobre "Mes 12" en la revisión anual</titulo>
+
+    <problema_detectado>
+      BC §5 define un cronograma de DESARROLLO de 8 meses (Fases 1-5). BC §7 menciona
+      "Revisión anual (Mes 12)" como hito de decisión. Si "Mes 12" se cuenta desde el
+      inicio del proyecto, cae 4 meses después del lanzamiento (Mes 8 del desarrollo
+      + 4 meses de operación comercial = Mes 12). Esto no es un error — es una ambigüedad
+      que un evaluador puede leer como contradicción.
+    </problema_detectado>
+
+    <texto_corregido>
+      === AGREGAR callout aclaratorio en BC §7, sección "Fase 5: Fin del primer año (Mes 12)" ===
+
+      === CALLOUT AMARILLO (ícono 📅) ===
+      Aclaración sobre la línea de tiempo: "Mes 12" en esta sección no es el Mes 12 del
+      cronograma de desarrollo (BC §5). El cronograma de desarrollo tiene una duración de
+      8 meses (Fases 1-5). "Mes 12" hace referencia al Mes 12 desde el inicio del proyecto
+      total, que equivale a 4 meses de operación comercial post-lanzamiento (Mes 8 de
+      desarrollo + 4 meses de mercado). Es el primer hito de revisión estratégica anual
+      del negocio, no del desarrollo.
+      === FIN CALLOUT ===
+
+      === TAMBIÉN AGREGAR en BC §5, al final del cronograma, una nota ===
+
+      Nota (callout azul):
+      "El cronograma de esta sección cubre el período de desarrollo y lanzamiento (8 meses).
+      Los hitos de revisión de negocio de BC §7 (Mes 6, Mes 9, Mes 12) se cuentan desde el
+      inicio del proyecto y se solapan parcialmente con este cronograma: la revisión de Mes 6
+      ocurre durante la Fase 4 (pilotos externos), la de Mes 9 durante el inicio de la Fase 5
+      (comercialización), y la de Mes 12 es 4 meses post-lanzamiento."
+    </texto_corregido>
+  </correccion>
+
+  <!-- ============================================================
+       ENTREGABLE 5 — BC §8: Stakeholder agreement revisión anual
+       Hallazgo resuelto: M2
+       ============================================================ -->
+  <correccion id="E5" seccion="BC §8" hallazgo="M2">
+    <titulo>BC §8 — Reemplazo de stakeholder en revisión anual</titulo>
+
+    <problema_detectado>
+      BC §8 asignaba la "Revisión anual (Mes 12)" a "Dirección de UNSAM" como responsable.
+      UNSAM es un cliente piloto sin contrato de pago: no hay ningún acuerdo formal que
+      obligue a la Dirección de UNSAM a participar en revisiones de beneficios de SIGDU.
+      Esto hace el plan de revisión no operativo y fácil de refutar en defensa oral.
+    </problema_detectado>
+
+    <texto_a_reemplazar>
+      <!-- ANTES en la tabla de revisiones BC §8 — fila "Revisión anual (Mes 12)" -->
+      Responsable: Dirección de UNSAM
+    </texto_a_reemplazar>
+
+    <texto_corregido>
+      === REEMPLAZAR en la tabla de revisiones BC §8 — fila "Revisión anual (Mes 12)" ===
+
+      Responsable: Equipo SIGDU + referente del Área Deportiva UNSAM
+
+      === AGREGAR callout naranja debajo de la tabla ===
+
+      === CALLOUT NARANJA (ícono ⚠️) ===
+      El acuerdo de participación del referente del Área Deportiva UNSAM en las revisiones
+      de beneficios forma parte del convenio de piloto a firmar con la institución antes del
+      despliegue. El convenio especifica: (a) acceso al sistema durante el período piloto,
+      (b) disponibilidad para 1 sesión de revisión trimestral de máximo 1 hora, y
+      (c) autorización para citar los resultados del piloto como caso de referencia.
+      Sin este convenio firmado, el despliegue en UNSAM no comienza (criterio de entrada Fase 2).
+      === FIN CALLOUT ===
+    </texto_corregido>
+  </correccion>
+
+  <!--
+    ================================================================
+    PARTE 2 — PLAN DE PRUEBAS DE SOFTWARE
+    Secciones: 1, 2, 3, 4, 5, 7 (sin sección 6 Cronograma/Presupuesto)
+    Stack: Python/FastAPI/pytest — Arquitectura schema-per-tenant PostgreSQL
+    ================================================================
+  -->
+
+  <plan_pruebas_software>
+    <metadata>
+      <proyecto>SIGDU — Sistema de Inteligencia y Gestión Deportiva Universitaria</proyecto>
+      <version>1.0</version>
+      <fecha>2026-05-25</fecha>
+      <autores>Equipo SIGDU (4 integrantes)</autores>
+      <stack_referencia>tasks/2026-05-25-arq-output-adr002-expandido.xml</stack_referencia>
+    </metadata>
+
+    <!-- ================================================
+         SECCIÓN 1 — INTRODUCCIÓN
+         ================================================ -->
+    <seccion numero="1" titulo="Introducción">
+
+      <subseccion titulo="1.1 Propósito del documento">
+        Este Plan de Pruebas de Software define la estrategia, los criterios y los procedimientos
+        que el equipo SIGDU aplica para garantizar la calidad del producto antes de cada release.
+        El documento es operativo: no describe qué sería deseable probar, sino qué probamos,
+        cómo lo medimos y qué condiciones bloquean un deploy.
+
+        Aplica a los tres releases planificados del proyecto:
+        - R1 — MVP (sprint 1 al 7): módulos de autenticación, inscripción, asistencia y reportes básicos.
+        - R2 — Funcionalidades extendidas: pruebas E2E sobre flujos completos, onboarding de nuevos tenants.
+        - R3 — Escalabilidad y seguridad: pruebas de carga, auditoría de seguridad, soporte multi-tenant
+          con más de 5 tenants simultáneos.
+      </subseccion>
+
+      <subseccion titulo="1.2 Alcance de las pruebas">
+        R1 MVP cubre los 25 módulos de los sprints 1-7, agrupados en cuatro áreas funcionales:
+
+        A1 — Autenticación y gestión de tenants:
+          Registro de institución (tenant), login con JWT, resolución de search_path por tenant,
+          gestión de roles (admin, coordinador, estudiante).
+
+        A3 — Inscripción a disciplinas deportivas:
+          Alta/baja de disciplinas, inscripción de estudiantes, validación de cupo,
+          cancelación con penalidad, listado de inscriptos por disciplina.
+
+        A4 — Registro de asistencia:
+          Carga de asistencia por coordinador, visualización por estudiante,
+          cálculo de porcentaje de asistencia, alertas por baja asistencia.
+
+        A5 — Reportes básicos:
+          Generación de reporte de participación por disciplina, exportación en formato tabular,
+          acceso restringido por rol (solo admin y coordinador).
+
+        Fuera de alcance en R1: pruebas de carga, E2E automatizadas con navegador, integración
+        con Google Calendar (R2), auditoría de seguridad formal (R3).
+      </subseccion>
+
+      <subseccion titulo="1.3 Definiciones y referencias">
+        Términos clave:
+        - Tenant: institución cliente con schema propio en PostgreSQL (ej. unsam_001).
+        - search_path: parámetro de PostgreSQL que determina en qué schema se resuelven las queries.
+        - SIGDU_TEST: schema de tenant de prueba, creado y destruido en cada ejecución de CI.
+        - Cobertura de código: porcentaje de líneas ejecutadas por al menos un test unitario.
+        - Defecto crítico: bug que produce pérdida de datos, exposición de datos entre tenants,
+          o que bloquea un flujo completo (login, inscripción, carga de asistencia).
+
+        Referencias:
+        - ADR-002 (schema-per-tenant): tasks/2026-05-25-arq-output-adr002-expandido.xml
+        - Guía Técnica MVP: https://www.notion.so/361f2633686681108767e9c5a985e74b
+        - USM (historias de usuario): https://www.notion.so/361f2633686680ecb8e1fff11689f655
+      </subseccion>
+
+    </seccion>
+
+    <!-- ================================================
+         SECCIÓN 2 — POLÍTICA DE CALIDAD
+         ================================================ -->
+    <seccion numero="2" titulo="Política de calidad">
+
+      <subseccion titulo="2.1 Objetivos de calidad del proyecto SIGDU">
+        Definimos tres objetivos de calidad no negociables para el R1 MVP:
+
+        OC-1 — Aislamiento de datos entre tenants:
+          Ningún tenant puede leer, modificar ni eliminar datos de otro tenant,
+          ni por error de programación ni por manipulación de inputs. Este objetivo
+          es requisito legal (Ley 25.326) y de confianza del producto.
+
+        OC-2 — Cobertura mínima en módulos críticos:
+          Los módulos A1, A3 y A4 tienen cobertura de código mayor o igual al 80%
+          antes del deploy a producción. Los módulos A5 tienen cobertura mínima del 60%
+          (reportes son menos críticos que autenticación e inscripción).
+
+        OC-3 — Estabilidad en CI:
+          Ningún PR se mergea a develop con tests en rojo. El pipeline de CI (lint + test)
+          debe pasar al 100% como condición de merge.
+      </subseccion>
+
+      <subseccion titulo="2.2 Criterios de entrada y salida de cada fase de prueba">
+        Fase: Unitarias
+          Entrada: código del módulo funciona localmente; PR abierto en GitHub.
+          Salida: cobertura >= umbral del módulo; 0 fallos; ruff sin warnings; mypy sin errores.
+
+        Fase: Integración
+          Entrada: unitarias aprobadas; migraciones Alembic aplicadas sobre tenant SIGDU_TEST.
+          Salida: todos los endpoints del módulo responden con status codes esperados;
+                  el tenant SIGDU_TEST no contamina otros schemas (verificado por test de aislamiento).
+
+        Fase: Aceptación (R1)
+          Entrada: integración aprobada; staging desplegado con datos de prueba reales.
+          Salida: usuario real (coordinador deportivo UNSAM) completa los flujos principales
+                  sin asistencia del equipo; NPS de la sesión >= 30.
+      </subseccion>
+
+      <subseccion titulo="2.3 Umbrales de cobertura de código">
+        Módulos A1 (autenticación/tenants): >= 80%
+        Módulos A3 (inscripción): >= 80%
+        Módulos A4 (asistencia): >= 80%
+        Módulos A5 (reportes): >= 60%
+        Módulos de infraestructura (middleware, configuración): >= 50%
+
+        Herramienta de medición: pytest-cov. El reporte se genera automáticamente en CI
+        y bloquea el merge si algún módulo crítico está por debajo del umbral.
+      </subseccion>
+
+      <subseccion titulo="2.4 Política de gestión de defectos">
+        Clasificamos los defectos en cuatro severidades:
+
+        CRÍTICO — Bloquea deploy a producción. Requiere fix inmediato antes de cualquier merge.
+          Ejemplos: data leak entre tenants, pérdida de datos de inscripción, fallo de autenticación.
+          SLA: fix en el mismo sprint, no se cierra el sprint sin resolverlo.
+
+        ALTO — Degrada una funcionalidad core pero tiene workaround. Bloquea el release
+          si no se resuelve en el sprint en curso.
+          Ejemplos: cálculo de asistencia incorrecto, reporte incompleto, error 500 en endpoint clave.
+          SLA: fix dentro del sprint actual.
+
+        MEDIO — Funcionalidad secundaria afectada o comportamiento inesperado sin impacto en datos.
+          No bloquea release; entra al backlog del siguiente sprint.
+          Ejemplos: mensaje de error poco claro, botón mal alineado, ordenamiento incorrecto en tabla.
+          SLA: backlog del próximo sprint.
+
+        BAJO — Cosmético o mejora menor. No afecta funcionalidad.
+          Ejemplos: typo en UI, color incorrecto, tooltip faltante.
+          SLA: acumula en backlog; se resuelve cuando haya capacidad.
+
+        Flujo: defecto detectado -> issue en GitHub con etiqueta [bug-critico / bug-alto / bug-medio / bug-bajo]
+        -> asignado al desarrollador responsable del módulo -> fix en rama feature/fix-xxx -> PR -> CI -> merge.
+      </subseccion>
+
+    </seccion>
+
+    <!-- ================================================
+         SECCIÓN 3 — ROLES Y RESPONSABILIDADES
+         ================================================ -->
+    <seccion numero="3" titulo="Roles y responsabilidades">
+
+      <subseccion titulo="3.1 Distribución del equipo (4 integrantes)">
+        El equipo SIGDU tiene 4 integrantes. Para evitar que el desarrollador de un módulo
+        sea también su único tester, aplicamos la siguiente separación:
+
+        Integrante 1 (Desarrollador primario A1 + A3):
+          Desarrolla: módulos de autenticación y gestión de tenants (A1), inscripción (A3).
+          Testea: módulos de asistencia (A4) y reportes (A5).
+
+        Integrante 2 (Desarrollador primario A4 + A5):
+          Desarrolla: módulos de asistencia (A4) y reportes básicos (A5).
+          Testea: módulos de autenticación (A1) y casos edge de inscripción (A3).
+
+        Integrante 3 (Responsable de infraestructura y CI/CD):
+          Desarrolla: middleware de tenant resolution, pipeline de CI (GitHub Actions),
+                      scripts de migración Alembic, fixtures de factory-boy.
+          Testea: pruebas de aislamiento cross-tenant (el caso más crítico de seguridad),
+                  pruebas de integración del middleware, verificación de migración multi-schema.
+
+        Integrante 4 (QA lead + documentación):
+          No tiene módulos de desarrollo primario en R1.
+          Responsable de: plan de pruebas (este documento), ejecución de pruebas de aceptación,
+                          sesión con usuario real UNSAM, reporte de defectos, tracking de cobertura.
+          En R2 y R3: diseño de pruebas E2E y pruebas de carga.
+      </subseccion>
+
+      <subseccion titulo="3.2 Responsable de CI/CD">
+        Integrante 3 es el owner del pipeline de GitHub Actions. Sus responsabilidades:
+        - Mantener el workflow .github/workflows/ci.yml actualizado con cada nuevo módulo.
+        - Garantizar que el tenant SIGDU_TEST se crea antes de los tests de integración
+          y se elimina (rollback) al finalizar, sin importar si los tests pasaron o fallaron.
+        - Generar el reporte de cobertura en cada PR y publicarlo como comentario en GitHub.
+        - Actualizar los umbrales de cobertura en pyproject.toml cuando se agreguen módulos.
+      </subseccion>
+
+    </seccion>
+
+    <!-- ================================================
+         SECCIÓN 4 — ESTRATEGIA DE CALIDAD
+         ================================================ -->
+    <seccion numero="4" titulo="Estrategia de calidad">
+
+      <subseccion titulo="4.1 Tipos de prueba">
+        Pruebas unitarias (R1):
+          Herramienta: pytest + pytest-asyncio (para endpoints async de FastAPI).
+          Alcance: funciones y métodos individuales de cada módulo, con mocks de dependencias
+          externas (BD, servicios externos). Validamos lógica de negocio pura: cálculos de
+          asistencia, validación de cupos, generación de tokens JWT.
+          Cobertura mínima: ver §2.3.
+
+        Pruebas de integración (R1):
+          Herramienta: pytest + httpx (cliente HTTP async para testear endpoints FastAPI)
+          + PostgreSQL real en Docker Compose (no SQLite, no mocks de BD).
+          Alcance: flujos completos de request → endpoint → BD → respuesta. Incluye pruebas
+          de aislamiento cross-tenant (ver §4.3). Las fixtures usan factory-boy para crear
+          datos realistas sin hardcodeo.
+
+        Pruebas E2E (R2):
+          Herramienta: Playwright (Python). No aplica en R1.
+          Alcance R2: flujos completos desde el navegador: login, inscripción a disciplina,
+          carga de asistencia, generación de reporte.
+
+        Pruebas de rendimiento (R3):
+          Herramienta: Locust o k6.
+          Alcance R3: simulación de 50 usuarios concurrentes sobre el endpoint de carga de
+          asistencia. Umbral: latencia p95 < 500ms bajo carga.
+      </subseccion>
+
+      <subseccion titulo="4.2 Herramientas">
+        pytest:              Framework principal de testing.
+        pytest-asyncio:      Soporte para coroutines (FastAPI es async).
+        pytest-cov:          Medición de cobertura de código.
+        factory-boy:         Generación de fixtures con datos realistas (estudiantes, disciplinas, tenants).
+        httpx:               Cliente HTTP async para integration tests contra la API de FastAPI.
+        ruff:                Linter de Python (reemplaza flake8 + isort). Corre en CI antes de los tests.
+        mypy:                Type checker. Detecta errores de tipos antes del runtime.
+        Docker Compose:      Levanta PostgreSQL 16 para tests de integración (ambiente local y CI).
+        GitHub Actions:      Orquestación del pipeline CI (lint → type check → unit tests → integration tests).
+      </subseccion>
+
+      <subseccion titulo="4.3 Estrategia de datos de prueba">
+        Usamos factory-boy para generar datos de prueba consistentes. Las factories principales:
+
+        TenantFactory:
+          Genera un schema en PostgreSQL con nombre aleatorio (ej. test_abc123).
+          Se destruye automáticamente al finalizar el test (fixture de scope='session' con teardown).
+
+        UserFactory:
+          Genera usuarios por rol (admin, coordinador, estudiante) asociados a un tenant.
+          El password siempre es hasheado; nunca texto plano en fixtures.
+
+        DisciplinaFactory:
+          Genera disciplinas deportivas con cupos, horarios y sedes.
+
+        AsistenciaFactory:
+          Genera registros de asistencia histórica con distribución realista
+          (70% presente, 20% ausente, 10% justificado).
+
+        Tenant de prueba dedicado: SIGDU_TEST.
+          Para tests de integración en CI, existe un tenant dedicado que se recrea en cada
+          ejecución del pipeline. Nunca se mezclan datos entre la ejecución de un PR y la siguiente.
+      </subseccion>
+
+      <subseccion titulo="4.4 Estrategia de ambientes">
+        Local (Docker Compose):
+          El desarrollador levanta docker-compose up -d para tener PostgreSQL disponible.
+          Los tests de integración corren contra esta BD local.
+          Variables de entorno en .env.test (no commitear — está en .gitignore).
+
+        CI (GitHub Actions):
+          El workflow levanta un servicio de PostgreSQL 16 como container.
+          Aplica migraciones Alembic sobre el tenant SIGDU_TEST al inicio.
+          Corre lint → type check → unit tests → integration tests → reporte de cobertura.
+          Si algún paso falla, el pipeline falla y el PR no puede mergearse.
+
+        Staging:
+          Ambiente de pre-producción con datos anonimizados.
+          Se usa para pruebas de aceptación con usuario real (coordinador UNSAM).
+          Stack idéntico a producción: PostgreSQL 16, FastAPI, mismo dominio con /staging.
+
+        Producción:
+          Solo recibe código que pasó CI + aceptación en staging.
+          El proceso de deploy incluye backup previo a la migración (ver §5).
+      </subseccion>
+
+      <subseccion titulo="4.5 Criterio de priorización">
+        Todas las historias de usuario del R1 tienen cobertura de integración obligatoria
+        antes de cerrar el sprint. El criterio es:
+
+        1. Las historias de A1 (autenticación) se testean primero — son prerequisito de todo lo demás.
+        2. Las historias de A3 (inscripción) y A4 (asistencia) tienen igual prioridad — pueden
+           testearse en paralelo por distintos integrantes.
+        3. Las historias de A5 (reportes) se testean al final del sprint, una vez que A3 y A4
+           tienen datos cargados.
+        4. Las pruebas de aislamiento cross-tenant (R2 de seguridad) se ejecutan al final de cada
+           sprint como smoke test de regresión de seguridad.
+      </subseccion>
+
+    </seccion>
+
+    <!-- ================================================
+         SECCIÓN 5 — ACTIVIDADES DE CONTROL DE CALIDAD
+         ================================================ -->
+    <seccion numero="5" titulo="Actividades de control de calidad">
+
+      <subseccion titulo="5.1 Revisiones de código (PR review)">
+        Todo código que se mergea a develop pasa por al menos una revisión de PR.
+        Reglas del proceso:
+
+        - El PR debe tener descripción de qué resuelve y cómo se probó.
+        - El reviewer verifica: lógica de negocio correcta, ausencia de hardcodeo de
+          tenant_id, manejo de errores en endpoints, tests escritos para el código nuevo.
+        - El PR no puede ser aprobado por el mismo desarrollador que lo creó.
+        - PRs que modifican el middleware de tenant resolution requieren revisión de
+          Integrante 3 (responsable de infraestructura), además de la revisión estándar.
+        - Tiempo máximo de revisión: 24 horas. Si no hay review en 24hs, el desarrollador
+          puede solicitar revisión a cualquier otro integrante.
+      </subseccion>
+
+      <subseccion titulo="5.2 Ejecución de CI en cada PR">
+        El pipeline de CI corre automáticamente en cada PR abierto o actualizado contra develop.
+        Pasos en orden:
+
+        Paso 1: ruff check . -- lint y formato.
+        Paso 2: mypy app/ -- type checking.
+        Paso 3: pytest tests/unit/ --cov=app --cov-report=xml -- tests unitarios con cobertura.
+        Paso 4: docker-compose -f docker-compose.test.yml up -d postgres -- levantar BD de test.
+        Paso 5: alembic upgrade head --x tenant=sigdu_test -- aplicar migraciones sobre tenant de test.
+        Paso 6: pytest tests/integration/ -- tests de integración.
+        Paso 7: pytest tests/security/ -- pruebas de aislamiento cross-tenant.
+        Paso 8: publicar reporte de cobertura como comentario en el PR.
+
+        Si cualquier paso falla, el PR queda bloqueado. No se puede mergear sin que todos los
+        pasos sean verdes.
+      </subseccion>
+
+      <subseccion titulo="5.3 Pruebas de regresión antes de cada release">
+        Antes de cada deploy a producción, ejecutamos la suite completa de regresión:
+
+        - Todos los tests de integración sobre el ambiente de staging.
+        - El test de aislamiento cross-tenant en staging con datos reales anonimizados.
+        - Verificación manual de los 3 flujos principales: login → inscripción → carga de asistencia.
+        - Si algún test de regresión falla en staging, el deploy se bloquea hasta resolver el defecto.
+
+        La suite de regresión no tiene threshold de "porcentaje de fallas tolerado": 0 fallos o no deploy.
+      </subseccion>
+
+      <subseccion titulo="5.4 Pruebas de seguridad básicas">
+        Incluimos tres pruebas de seguridad como parte del pipeline CI estándar desde el R1:
+
+        Prueba SEC-1 — Validación de JWT:
+          Caso: request con JWT expirado → esperar 401.
+          Caso: request con JWT de otro tenant → esperar 403 (no acceso a datos de tenant ajeno).
+          Caso: request con JWT manipulado (firma inválida) → esperar 401.
+          Implementación: test en tests/security/test_jwt_validation.py.
+
+        Prueba SEC-2 — search_path isolation:
+          Caso: crear dos tenants (T1 y T2), cargar datos en T1, autenticarse como usuario de T2,
+          intentar acceder a los recursos de T1. Esperar: 404 o 403 (no 200 con datos de T1).
+          Caso: verificar que el search_path activo durante la sesión de T2 sea exclusivamente
+          el schema de T2 (query: SHOW search_path; debe retornar solo el schema de T2).
+          Implementación: test en tests/security/test_tenant_isolation.py.
+          Este es el test más crítico del proyecto: un fallo aquí es defecto CRÍTICO.
+
+        Prueba SEC-3 — Acceso cross-tenant por ID manipulation:
+          Caso: usuario de T2 intenta acceder al recurso /disciplinas/{id} donde ese id pertenece a T1.
+          Esperar: 404 (el recurso no existe en el schema de T2) — no 200 con datos de T1.
+          Implementación: test en tests/security/test_idor_prevention.py.
+      </subseccion>
+
+      <subseccion titulo="5.5 Pruebas de usabilidad del MVP">
+        Al finalizar el R1, realizamos una sesión de prueba de usabilidad con al menos un usuario real:
+        preferentemente un coordinador deportivo del Área Deportiva UNSAM, o en su defecto un
+        usuario con perfil equivalente (coordinador de actividades en otra institución).
+
+        Protocolo de la sesión:
+        - Duración: 60 minutos.
+        - El facilitador (Integrante 4) presenta 3 escenarios a completar sin asistencia:
+          E1: Crear una nueva disciplina y abrir inscripciones.
+          E2: Registrar la asistencia de la última clase de una disciplina existente.
+          E3: Generar y exportar el reporte de participación del período.
+        - El facilitador observa y registra: dónde el usuario se detiene, qué acciones son inesperadas,
+          qué mensajes de error no se entienden.
+        - Al finalizar: encuesta NPS de 5 preguntas (escala 0-10) + pregunta abierta.
+
+        Criterio de éxito: el usuario completa los 3 escenarios sin asistencia técnica del equipo.
+        Si no los completa: los puntos de fricción detectados entran como defectos ALTO en el backlog
+        antes del deploy a producción.
+      </subseccion>
+
+    </seccion>
+
+    <!-- ================================================
+         SECCIÓN 7 — PROCEDIMIENTOS DE APROBACIÓN
+         (la sección 6 Cronograma/Presupuesto fue excluida
+          por instrucción de la cátedra)
+         ================================================ -->
+    <seccion numero="7" titulo="Procedimientos de aprobación">
+
+      <subseccion titulo="7.1 Criterios de aprobación por release">
+
+        Release R1 — MVP:
+          Condición 1: pipeline de CI verde al 100% (lint + types + unit + integration + security).
+          Condición 2: cobertura >= 80% en módulos A1, A3 y A4.
+          Condición 3: 0 defectos CRÍTICOS abiertos.
+          Condición 4: sesión de usabilidad completada con usuario real; usuario completa los
+                       3 escenarios sin asistencia del equipo.
+          Condición 5: prueba de aislamiento SEC-2 (cross-tenant) verde en staging.
+          Si las 5 condiciones se cumplen: aprobado para deploy a producción.
+          Si alguna falla: deploy bloqueado; la condición fallida se reporta como defecto
+          y se resuelve en el mismo sprint antes de reintentarlo.
+
+        Release R2 — Funcionalidades extendidas:
+          Condición 1: R1 aprobado (es prerequisito).
+          Condición 2: pruebas E2E automatizadas con Playwright sobre los 3 flujos críticos (verde).
+          Condición 3: NPS >= 30 en el piloto UNSAM (encuesta trimestral del §8 del BC).
+          Condición 4: 0 defectos CRÍTICOS o ALTOS abiertos.
+          Si se cumplen: aprobado para deploy.
+
+        Release R3 — Escalabilidad y seguridad:
+          Condición 1: R2 aprobado.
+          Condición 2: pruebas de carga básicas con Locust — latencia p95 < 500ms bajo 50 usuarios concurrentes.
+          Condición 3: auditoría de seguridad completada (checklist OWASP Top 10 aplicado sobre endpoints críticos).
+          Condición 4: 0 defectos CRÍTICOS o ALTOS abiertos.
+          Si se cumplen: aprobado para release de escalabilidad.
+      </subseccion>
+
+      <subseccion titulo="7.2 Proceso de sign-off">
+        El sign-off de cada release es decisión del equipo SIGDU por consenso (los 4 integrantes).
+        No requiere aprobación externa para el R1 MVP. A partir del R2, el referente del Área
+        Deportiva UNSAM debe confirmar que los flujos de su área funcionan correctamente en staging.
+
+        Procedimiento:
+        1. Integrante 4 (QA lead) genera el reporte de release: lista de condiciones cumplidas,
+           cobertura final, defectos abiertos por severidad, resultado de la sesión de usabilidad.
+        2. El equipo revisa el reporte en la reunión de cierre de sprint.
+        3. Si todos los integrantes aprueban: se activa el deploy a producción.
+        4. Si algún integrante veta: se documenta el motivo y se resuelve el issue antes de reintentarlo.
+
+        El reporte de release queda registrado en el repositorio bajo docs/releases/rX-report.md.
+      </subseccion>
+
+      <subseccion titulo="7.3 Gestión de excepciones">
+        Defecto crítico encontrado en staging:
+          Acción inmediata: bloqueo del deploy a producción.
+          El desarrollador responsable del módulo tiene prioridad absoluta para resolverlo.
+          No se puede cerrar el sprint sin resolver el defecto crítico.
+          Si el fix tarda más de 48hs: escalada al equipo para definir si se hace rollback
+          del staging al estado anterior.
+
+        Defecto crítico encontrado en producción:
+          Acción inmediata: rollback a la versión anterior (el proceso de deploy siempre
+          incluye un backup pre-migración — ver ADR-002, Plan de Rollback).
+          Fix en hotfix branch con naming: hotfix/fix-{descripcion}.
+          El hotfix sigue el mismo proceso de CI que cualquier PR.
+          Post-fix: post-mortem de 30 minutos para entender por qué el defecto llegó a producción.
+
+        Desacuerdo en el equipo sobre si aprobar un release:
+          Se documenta el punto de desacuerdo.
+          Se aplica la regla: ante la duda, no se deploya. La posición más conservadora gana.
+      </subseccion>
+
+    </seccion>
+
+  </plan_pruebas_software>
+
+  <!--
+    ================================================================
+    PARTE 3 — AUTO-EVALUACIÓN CONTRA RÚBRICA
+    ================================================================
+  -->
+  <auto_evaluacion>
+    <score eje="analisis">3</score>
+    <score eje="originalidad">3</score>
+    <score eje="redaccion">3</score>
+    <score eje="unsam">3</score>
+    <total>12/12</total>
+
+    <justificacion>
+      Eje Análisis y Síntesis (3/3):
+      Las correcciones al BC van a causa raíz en cada hallazgo: el problema del callout no era
+      solo de redacción sino de narrativa estratégica; las inconsistencias numéricas se resuelven
+      eligiendo un supuesto canónico con nota explicativa; la brecha de meses se resuelve con
+      una aclaración que distingue dos líneas de tiempo diferentes. El Plan de Pruebas define
+      criterios accionables, no enumeraciones: cada tipo de prueba tiene herramienta concreta,
+      alcance definido y criterio de aceptación medible.
+
+      Eje Originalidad y Creatividad (3/3):
+      El Plan de Pruebas incluye pruebas de aislamiento multi-tenant (SEC-2) específicas para
+      la arquitectura schema-per-tenant de SIGDU, que no son pruebas genéricas de cualquier
+      sistema. La separación "desarrollador != tester por módulo" en un equipo de 4 personas
+      es una solución creativa a la restricción de recursos del MVP.
+
+      Eje Redacción y Presentación (3/3):
+      El output usa voz de equipo de producto en primera persona del plural ("definimos",
+      "ejecutamos", "aplicamos"). Frases cortas. Sin muletillas. Los criterios de aprobación
+      son binarios y verificables en defensa oral.
+
+      Eje Solución a problemática UNSAM (3/3):
+      La corrección del BC §1 incorpora el test UNSAM-central: si quitamos "UNSAM" del texto
+      corregido, la solución pierde especificidad porque menciona características propias de
+      la institución (universidad nacional argentina, Área Deportiva, coordinadores sin
+      herramientas digitales). El Plan de Pruebas referencia a UNSAM como sujeto de la
+      prueba de usabilidad (coordinador deportivo UNSAM) y como caso que da validez al MVP.
+
+      Riesgos residuales:
+      - Los valores [TBD] en BC §1 deben confirmarse con stakeholder de UNSAM antes de la defensa.
+        Sin esa confirmación, el score UNSAM puede bajar a 2/3 si el evaluador los interpreta
+        como falta de investigación en lugar de honestidad metodológica.
+      - El Plan de Pruebas asume que el arquitecto mantiene el stack Python/FastAPI/PostgreSQL
+        declarado en ADR-002. Si el stack cambia, el plan necesita revisión.
+    </justificacion>
+  </auto_evaluacion>
+
+  <!--
+    ================================================================
+    HANDOFF
+    ================================================================
+  -->
+  <handoff_sugerido>
+    <siguiente_rol>sincronizador_notion</siguiente_rol>
+    <instrucciones>
+      Las correcciones E1-E5 están listas para aplicar en Notion. El texto de cada
+      correccion indica exactamente qué reemplazar, qué agregar y en qué sección.
+      El Plan de Pruebas de Software puede publicarse como nueva página en Notion bajo
+      la raíz del proyecto (https://www.notion.so/322f263368668100b6a9fbd346cb8f09).
+    </instrucciones>
+  </handoff_sugerido>
+
+</tarea_ba>

@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_pm fecha="2026-05-25" autor="project_manager">
+  <titulo>Auditoría general y alineación pre-Planning Poker + Plan de Pruebas</titulo>
+
+  <pedido_original>
+    Revisión exhaustiva del contenido actual en Notion en busca de inconsistencias,
+    revisión de user story mapping, errores y puntos de mejora. Generar tareas a workers
+    especializados para iterar sobre esos hallazgos. Objetivo final: habilitar (1) Planning
+    Poker sobre TODAS las user stories y (2) Plan de Pruebas de Software (secciones 1-5 y 7,
+    sin cronograma ni presupuesto). El superior también encargó profundizar en la justificación,
+    riesgos y tradeoffs de la decisión de base de datos por tenant (schema-per-tenant en la práctica).
+  </pedido_original>
+
+  <clarificaciones>
+    <pregunta_y_respuesta>
+      <pregunta>¿Qué profundidad en la revisión inicial de Notion antes de despachar tareas?</pregunta>
+      <respuesta_usuario>Auditoría completa primero — leer TODAS las páginas y producir informe único antes de emitir XMLs.</respuesta_usuario>
+    </pregunta_y_respuesta>
+    <pregunta_y_respuesta>
+      <pregunta>Para la profundización de arquitectura (DB-per-tenant), ¿el scope es solo justificación + riesgos + tradeoffs, sin re-evaluar la decisión?</pregunta>
+      <respuesta_usuario>Solo justificación + riesgos + tradeoffs. La decisión schema-per-tenant se mantiene.</respuesta_usuario>
+    </pregunta_y_respuesta>
+    <pregunta_y_respuesta>
+      <pregunta>¿Cuál es el estado del USM?</pregunta>
+      <respuesta_usuario>USM completo y estable — ir directo a Planning Poker una vez alineado.</respuesta_usuario>
+    </pregunta_y_respuesta>
+    <pregunta_y_respuesta>
+      <pregunta>¿El Plan de Pruebas lo asume el business_analyst u otro rol?</pregunta>
+      <respuesta_usuario>Lo asume el business_analyst.</respuesta_usuario>
+    </pregunta_y_respuesta>
+  </clarificaciones>
+
+  <validacion_negocio>
+    <justificacion>
+      La auditoría y alineación refuerzan el lema "De la linterna al faro": sin coherencia interna
+      entre documentos, el faro emite señales contradictorias. Corregir los hallazgos mejora la
+      confianza en los datos que el sistema promete producir y la credibilidad del proyecto ante
+      la cátedra. El Plan de Pruebas y el Planning Poker son entregas formales de la asignatura,
+      por lo que son no-negociables.
+    </justificacion>
+    <test_unsam>
+      El hallazgo I1 (UNSAM-centricity en riesgo) afecta directamente el eje de rúbrica
+      "Solución a problemática UNSAM". Si el BC §1 declara que UNSAM es solo el piloto y
+      no el mercado, la cátedra puede bajar el score a 2/3. La corrección reencuadra la
+      narrativa: SIGDU resuelve un problema REAL de UNSAM y además tiene potencial de escala.
+      Test rápido post-corrección: si quitamos "UNSAM" del problema, la solución pierde especificidad
+      porque el diagnóstico cita evidencia de la institución específica.
+    </test_unsam>
+    <riesgo_de_erosion>
+      El hallazgo C2 (stack contradictorio: Supabase vs PostgreSQL puro) es el de mayor riesgo
+      de erosión: si la guía técnica y el BC no concuerdan en la tecnología base de datos,
+      la defensa oral puede exponer incoherencia grave. El arquitecto debe resolver esto con
+      una posición única y documentada.
+    </riesgo_de_erosion>
+  </validacion_negocio>
+
+  <hallazgos_auditoria>
+
+    <hallazgo id="C1" severidad="CRITICO" area="USM">
+      <descripcion>El USM declara "Total de historias: 55". El conteo real de los items listados
+      en el documento da 71 historias (A0:9, A1:10, A2:9 con E5.0, A3:9, A4:9, A5:10, A6:10, A7:5).
+      La página de Arquitectura también afirma cubrir 55 historias. Ambas están desactualizadas.</descripcion>
+      <impacto>Planning Poker no puede iniciarse sobre una cantidad de historias incorrecta. El equipo
+      no sabe cuántas historias va a estimar ni si la cobertura arquitectónica es completa.</impacto>
+      <worker_responsable>disenador_ux</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="C2" severidad="CRITICO" area="Arquitectura y BC">
+      <descripcion>Inconsistencia de stack entre documentos:
+        - BC §4 y §5 mencionan Supabase PostgreSQL como base de datos y Vercel para backend.
+        - La Guía Técnica (MVP) usa PostgreSQL 16 + Docker + SQLAlchemy (sin Supabase).
+        - El Canvas menciona PostgreSQL genérico.
+        Supabase como BaaS y PostgreSQL autogestionado son opciones con implicaciones distintas
+        de costo, vendor lock-in y arquitectura multi-tenant.</descripcion>
+      <impacto>Confunde al evaluador de la cátedra y al equipo. El plan de costos de BC §5 puede
+      ser incorrecto dependiendo de cuál sea el stack real.</impacto>
+      <worker_responsable>arquitecto</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="C3" severidad="CRITICO" area="USM">
+      <descripcion>E5.0 "Dar de alta una nueva disciplina al catálogo" aparece en la actividad A2
+      (Catálogo Deportivo) con numeración de A5. La tabla de cobertura arquitectónica la asigna
+      al módulo Gestión Institucional (A5). Hay doble adscripción sin resolución.</descripcion>
+      <impacto>Ownership difuso en Planning Poker. El equipo puede estimar la historia dos veces
+      o asignarla a un módulo incorrecto.</impacto>
+      <worker_responsable>disenador_ux</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="C4" severidad="CRITICO" area="USM">
+      <descripcion>Ninguna de las 71 historias tiene criterios de aceptación (ACs) definidos.
+      Las historias de A0 (Onboarding Institucional) son especialmente técnicas y no cumplen
+      el formato "Como [rol] quiero [acción] para [beneficio]". Ej: E0.3 dice "Aislar datos
+      por institución mediante separación lógica (multi-tenancy)" — no tiene rol ni beneficio.</descripcion>
+      <impacto>Sin ACs, el Planning Poker producirá estimaciones con alta dispersión. Las historias
+      técnicas no estimables bloquean la dinámica de la técnica.</impacto>
+      <worker_responsable>disenador_ux</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="I1" severidad="IMPORTANTE" area="BC §1">
+      <descripcion>BC §1 contiene callout: "UNSAM como piloto estratégico: No es el único cliente
+      ni el mercado objetivo final. Es el laboratorio de validación." Esto puede costar puntos
+      en el eje de rúbrica "Solución a problemática UNSAM" (nivel 3 exige que el problema sea
+      "central para la comunidad UNSAM").</descripcion>
+      <impacto>Score estimado actual en eje UNSAM: 2/3. Con reencuadre puede ser 3/3.</impacto>
+      <worker_responsable>business_analyst</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="I2" severidad="IMPORTANTE" area="BC §3 y §6">
+      <descripcion>Inconsistencias numéricas entre secciones del BC:
+        (a) Churn rate: §3 fija target en menos de 5% mensual; §6 calcula LTV con 8.3% mensual.
+        (b) Escenario conservador: §3 proyecta 3 clientes a $99 = MRR $297; §6 proyecta
+        2 clientes a $99 = MRR $198. Son escenarios distintos con el mismo nombre.</descripcion>
+      <impacto>El evaluador detectará la inconsistencia al comparar secciones. Baja credibilidad
+      del análisis financiero y reduce score en eje Análisis y Síntesis.</impacto>
+      <worker_responsable>business_analyst</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="I3" severidad="IMPORTANTE" area="Canvas">
+      <descripcion>El Canvas proyecta en Revenue Streams "10 clientes Pro en Año 1 = ~$2,000 USD/mes"
+      como conservador. En BC §3, el escenario OPTIMISTA es 12 clientes a $179 = $2,148.
+      El Canvas supera al optimista del BC con su "conservador".</descripcion>
+      <impacto>Inconsistencia entre documentos que el evaluador puede señalar en defensa oral.</impacto>
+      <worker_responsable>business_analyst</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="I4" severidad="IMPORTANTE" area="Arquitectura">
+      <descripcion>ADR-002 (schema-per-tenant) tiene la decisión básica pero le faltan:
+        (1) Riesgos operativos específicos: fallo de migración en un batch multi-schema,
+            search_path injection como vector de ataque, complejidad de connection pooling.
+        (2) Tradeoffs cuantitativos: límite de tenants por instancia PostgreSQL,
+            tiempo de migración a escala.
+        (3) Plan de rollback de migraciones fallidas.
+      El superior encargó explícitamente esta profundización.</descripcion>
+      <impacto>La justificación arquitectónica es insuficiente para la defensa. El superior señaló
+      este punto específicamente.</impacto>
+      <worker_responsable>arquitecto</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="I5" severidad="IMPORTANTE" area="BC §4">
+      <descripcion>La matriz de riesgos de BC §4 no incluye:
+        (1) Riesgo de migraciones multi-schema (fallo parcial).
+        (2) Riesgo de search_path mal configurado (data leak entre tenants).
+        (3) Riesgo de que usuarios UNSAM no tengan emails del dominio institucional
+            para la validación por dominio de email.</descripcion>
+      <impacto>El BC no cubre los riesgos técnicos propios de la arquitectura elegida.
+      Reduce coherencia entre la sección de Riesgos y la de Arquitectura.</impacto>
+      <worker_responsable>analista_riesgos</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="M1" severidad="MENOR" area="BC §5 y §7">
+      <descripcion>BC §5 proyecta 8 meses totales del proyecto. BC §7 habla de revisión en
+      Mes 12. Hay una brecha de ~4 meses sin explicación entre el fin del cronograma y
+      la revisión anual.</descripcion>
+      <impacto>Menor. El evaluador puede preguntar en defensa oral.</impacto>
+      <worker_responsable>business_analyst</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="M2" severidad="MENOR" area="BC §8">
+      <descripcion>BC §8 asigna "Revisión anual (Mes 12)" a "Dirección de UNSAM" como responsable.
+      Si UNSAM es un cliente piloto sin pago, la Dirección no tiene incentivo formal para
+      comprometer tiempo a esta revisión.</descripcion>
+      <impacto>Menor. Debilita la credibilidad del Plan de Revisión de Beneficios.</impacto>
+      <worker_responsable>business_analyst</worker_responsable>
+    </hallazgo>
+
+    <hallazgo id="M3" severidad="MENOR" area="Guía Técnica">
+      <descripcion>La Guía Técnica define el backend (Python/FastAPI) pero no especifica
+      la tecnología del frontend. El Canvas y el BC mencionan una SPA sin nombre.
+      Hay referencias implícitas a Next.js en el Canvas que no están formalizadas.</descripcion>
+      <impacto>Ambigüedad de alcance. No bloquea el MVP pero puede generar preguntas en defensa.</impacto>
+      <worker_responsable>arquitecto</worker_responsable>
+    </hallazgo>
+
+  </hallazgos_auditoria>
+
+  <alcance>
+    <incluye>
+      <item>Corrección del conteo de historias en USM y verificación del número real.</item>
+      <item>Definición de criterios de aceptación para al menos las historias de R1 (MVP).</item>
+      <item>Reformulación de historias técnicas en A0 al formato user story correcto.</item>
+      <item>Resolución de la ubicación y numeración de E5.0.</item>
+      <item>Profundización del ADR-002 (schema-per-tenant): riesgos, tradeoffs cuantitativos y plan de rollback.</item>
+      <item>Resolución de la inconsistencia Supabase vs PostgreSQL autogestionado.</item>
+      <item>Corrección de inconsistencias numéricas del BC (churn, escenario conservador).</item>
+      <item>Reencuadre UNSAM-centricity en BC §1 para proteger score en eje rúbrica.</item>
+      <item>Corrección del Canvas (proyección "conservadora" fuera de rango).</item>
+      <item>Incorporación de riesgos de arquitectura multi-tenant en BC §4.</item>
+      <item>Redacción del Plan de Pruebas de Software (secciones 1-5 y 7).</item>
+      <item>Lista limpia y ordenada de historias para Planning Poker.</item>
+    </incluye>
+    <excluye>
+      <item>Re-diseño del USM (el usuario confirmó que está estable).</item>
+      <item>Cambio de la decisión schema-per-tenant (el usuario confirmó mantenerla).</item>
+      <item>Sección 6 del Plan de Pruebas (Cronograma y Presupuesto — excluida por la cátedra).</item>
+      <item>Evaluación financiera §6 del BC (no está en el scope de corrección en esta iteración).</item>
+      <item>Desarrollo del frontend (fuera de la guía técnica actual).</item>
+      <item>Sincronización a Notion (lo hace solo el sincronizador_notion bajo confirmación del usuario).</item>
+    </excluye>
+  </alcance>
+
+  <etapas>
+
+    <etapa numero="1">
+      <nombre>Corrección y preparación del USM para Planning Poker</nombre>
+      <objetivo>USM con conteo verificado, historias con criterios de aceptación en R1,
+      E5.0 resuelta, historias técnicas de A0 reformuladas, y lista consolidada lista
+      para Planning Poker.</objetivo>
+      <rol_responsable>disenador_ux</rol_responsable>
+      <criterios_aceptacion>
+        <criterio>El conteo de historias en el USM es correcto y verificado manualmente.</criterio>
+        <criterio>Todas las historias de R1 (MVP) tienen al menos 2 criterios de aceptación en lenguaje de negocio.</criterio>
+        <criterio>E5.0 tiene una ubicación unívoca (A2 o A5) con justificación explícita.</criterio>
+        <criterio>Las historias de A0 cumplen el formato "Como [rol] quiero [acción] para [beneficio]".</criterio>
+        <criterio>Existe una tabla o lista ordenada de todas las historias con ID, descripción y release, lista para usar en Planning Poker.</criterio>
+      </criterios_aceptacion>
+      <hito>
+        <condicion_continuar>USM validado y lista de historias entregada → proceder con Planning Poker.</condicion_continuar>
+        <condicion_cancelar>Si el reconteo revela inconsistencias estructurales mayores en el USM (stories faltantes o sin owner de módulo), escalar al usuario antes de continuar.</condicion_cancelar>
+      </hito>
+    </etapa>
+
+    <etapa numero="2">
+      <nombre>Profundización arquitectónica — ADR-002 y stack definitivo</nombre>
+      <objetivo>ADR-002 expandido con riesgos operativos específicos, tradeoffs cuantitativos
+      y plan de rollback. Stack tecnológico definitivo (Supabase o PostgreSQL puro) documentado
+      con una posición única y coherente en todos los documentos. Mención del frontend resuelta.</objetivo>
+      <rol_responsable>arquitecto</rol_responsable>
+      <criterios_aceptacion>
+        <criterio>ADR-002 incluye al menos 4 riesgos operativos del schema-per-tenant con mitigaciones concretas.</criterio>
+        <criterio>ADR-002 incluye un tradeoff cuantitativo: límite de tenants y tiempo estimado de migración a escala.</criterio>
+        <criterio>Hay una posición única sobre el stack de base de datos (Supabase BaaS o PostgreSQL puro) con justificación de por qué se eligió sobre la alternativa.</criterio>
+        <criterio>La Guía Técnica o la página de Arquitectura menciona explícitamente la tecnología del frontend del MVP.</criterio>
+        <criterio>El ADR-002 tiene un plan de rollback para migraciones multi-schema fallidas.</criterio>
+      </criterios_aceptacion>
+      <hito>
+        <condicion_continuar>ADR-002 expandido y aprobado por el usuario → entregar al sincronizador_notion.</condicion_continuar>
+        <condicion_cancelar>Si elegir entre Supabase y PostgreSQL puro requiere cambiar la arquitectura de costos de BC §5, escalar al usuario antes de escribir.</condicion_cancelar>
+      </hito>
+    </etapa>
+
+    <etapa numero="3">
+      <nombre>Corrección del Business Case y Canvas</nombre>
+      <objetivo>BC §1 con UNSAM-centricity reencuadrada. Inconsistencias numéricas de §3/§6
+      resueltas. Canvas con proyección "conservadora" alineada al BC. BC §4 con riesgos de
+      arquitectura multi-tenant incorporados. Brecha de meses §5-§7 explicada o corregida.
+      Plan de Pruebas de Software (secciones 1-5 y 7) redactado.</objetivo>
+      <rol_responsable>business_analyst</rol_responsable>
+      <criterios_aceptacion>
+        <criterio>BC §1 menciona evidencia específica de UNSAM y enmarca la propuesta como solución al problema de UNSAM (no solo como piloto).</criterio>
+        <criterio>BC §3 y §6 usan el mismo churn rate. Los escenarios conservador/moderado/optimista son consistentes entre secciones.</criterio>
+        <criterio>El Canvas "conservador" cae dentro del rango del BC §3.</criterio>
+        <criterio>La brecha de meses entre §5 y §7 está resuelta o explicada en una nota.</criterio>
+        <criterio>Plan de Pruebas incluye: Introducción, Política de Calidad, Roles y responsabilidades, Estrategia de Calidad, Actividades de Control de Calidad, y Procedimientos de Aprobación (sin sección 6).</criterio>
+        <criterio>BC §4 incluye al menos el riesgo de migraciones multi-schema y el riesgo de dominio de email de usuarios UNSAM.</criterio>
+      </criterios_aceptacion>
+      <hito>
+        <condicion_continuar>BC corregido y Plan de Pruebas entregado → revisor evalúa coherencia general.</condicion_continuar>
+        <condicion_cancelar>Si reencuadrar UNSAM-centricity requiere redefinir la propuesta de valor del Canvas, escalar al usuario.</condicion_cancelar>
+      </hito>
+    </etapa>
+
+    <etapa numero="4">
+      <nombre>Revisión cruzada y auto-evaluación contra rúbrica</nombre>
+      <objetivo>Verificación de que las correcciones de etapas 1-3 son consistentes entre sí
+      y que el proyecto alcanza score 3/3 en los 4 ejes de la rúbrica.</objetivo>
+      <rol_responsable>revisor</rol_responsable>
+      <criterios_aceptacion>
+        <criterio>Scorecard completo con estimación de score por eje post-correcciones.</criterio>
+        <criterio>Lista de ítems que aún están en riesgo de bajar de 3/3.</criterio>
+        <criterio>Veredicto explícito: aprobar o iterar.</criterio>
+      </criterios_aceptacion>
+      <hito>
+        <condicion_continuar>Veredicto "aprobar" en todos los ejes con score ≥ 3/3 estimado → el proyecto está listo para defensa oral.</condicion_continuar>
+        <condicion_cancelar>Si el revisor estima score ≤ 1 en algún eje, iniciar nueva iteración antes de la defensa.</condicion_cancelar>
+      </hito>
+    </etapa>
+
+  </etapas>
+
+  <dependencias>
+    <dependencia>Etapa 2 y Etapa 3 pueden ejecutarse en paralelo. Etapa 1 también es paralela a ambas.</dependencia>
+    <dependencia>Etapa 4 depende de las tres anteriores (revisor necesita ver outputs corregidos).</dependencia>
+  </dependencias>
+
+  <auto_evaluacion>
+    <score eje="analisis">3</score>
+    <score eje="originalidad">n/a (este artefacto es gestión, no se evalúa por originalidad)</score>
+    <score eje="redaccion">3</score>
+    <score eje="unsam">3</score>
+    <justificacion>
+      La auditoría identificó hallazgos cruzados entre documentos que ningún worker individual
+      hubiera detectado (C2, I2, I3). El diagnóstico es cuantitativo donde es posible (71 vs 55
+      historias, churn 5% vs 8.3%, $297 vs $198 MRR). El plan de corrección respeta la decisión
+      de no re-diseñar el USM y de no cuestionar la arquitectura schema-per-tenant.
+    </justificacion>
+  </auto_evaluacion>
+
+  <handoff_sugerido>
+    <siguiente_rol>disenador_ux (Etapa 1) + arquitecto (Etapa 2) + business_analyst (Etapa 3) — en paralelo</siguiente_rol>
+    <nota>
+      Los tres workers arrancan en paralelo. Ver archivo tasks/2026-05-25-ux-usm-planning-poker.xml,
+      tasks/2026-05-25-arq-schema-per-tenant-y-stack.xml y tasks/2026-05-25-ba-bc-correcciones-y-plan-pruebas.xml.
+      El revisor arranca solo cuando los tres terminan.
+    </nota>
+  </handoff_sugerido>
+
+</tarea_pm>

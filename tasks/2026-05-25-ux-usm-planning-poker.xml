@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<tarea_worker fecha="2026-05-25" autor="project_manager" destinatario="disenador_ux">
+  <titulo>Corrección y preparación del USM para Planning Poker</titulo>
+
+  <contexto>
+    La auditoría del PM detectó 4 hallazgos críticos en el USM que bloquean Planning Poker.
+    Esta tarea los resuelve todos. El usuario confirmó que el USM está "completo y estable" —
+    no se rediseña, solo se corrige y complementa para que el Planning Poker sea ejecutable.
+  </contexto>
+
+  <hallazgos_que_resuelve>
+    <hallazgo ref="C1">El USM declara 55 historias pero el conteo real da 71. La arquitectura
+    también afirma 55. Ambos documentos deben corregir el número.</hallazgo>
+    <hallazgo ref="C3">E5.0 aparece bajo A2 (Catálogo) con numeración de A5. Ownership ambiguo.
+    Decidir: ¿pertenece a A2 o a A5? Justificar. Actualizar la tabla de cobertura de Arquitectura.</hallazgo>
+    <hallazgo ref="C4">Ninguna historia tiene criterios de aceptación (ACs). Las historias de A0
+    no cumplen el formato user story. Ambos problemas bloquean Planning Poker.</hallazgo>
+  </hallazgos_que_resuelve>
+
+  <entregables>
+
+    <entregable id="1" nombre="Conteo verificado y lista maestra de historias">
+      <descripcion>
+        Contar manualmente CADA historia en el USM (de E0.1 a E7.5 más E5.0).
+        El número correcto es el que prevalece. Actualizar el texto en Notion (proponer al
+        sincronizador_notion). Producir una tabla maestra con:
+        - ID de historia (ej. E0.1)
+        - Actividad (A0-A7)
+        - Release (R1, R2, R3)
+        - Descripción corta
+        - Estado de ACs (pendiente / completo)
+      </descripcion>
+    </entregable>
+
+    <entregable id="2" nombre="Resolución de E5.0">
+      <descripcion>
+        Decidir la ubicación definitiva de E5.0 "Dar de alta una nueva disciplina al catálogo":
+        - Opción A: moverla a A5 (Gestión Institucional) ya que es una acción administrativa,
+          cambiar su aparición en A2 por un link o referencia cruzada.
+        - Opción B: mantenerla en A2 pero renombrarla como E2.0 y ajustar la numeración.
+        Justificar la decisión basándose en el bounded context del arquitecto (¿qué módulo
+        la gestiona en la arquitectura?). La tabla de cobertura de la página de Arquitectura
+        debe reflejar la decisión.
+      </descripcion>
+    </entregable>
+
+    <entregable id="3" nombre="Criterios de aceptación para historias de R1 (MVP)">
+      <descripcion>
+        Para CADA historia de R1 (las 25 del MVP), redactar mínimo 2 criterios de aceptación
+        en lenguaje de negocio (no técnico). Formato sugerido:
+          DADO [contexto], CUANDO [acción], ENTONCES [resultado esperado].
+        Prioridad especial en A0 (Onboarding Institucional) cuyos enunciados son técnicos:
+        - E0.3 "Aislar datos por institución" → reformular como user story y agregar ACs.
+        Los ACs de R2 y R3 pueden quedar como "pendiente" en la tabla maestra.
+      </descripcion>
+    </entregable>
+
+    <entregable id="4" nombre="Lista ordenada para Planning Poker">
+      <descripcion>
+        Producir la lista definitiva de historias en el orden en que se presentarán
+        en Planning Poker. Sugerencia de orden: por release (R1 primero) y dentro de cada
+        release por actividad (A0 → A7). Incluir:
+        - Número de historia
+        - Enunciado completo (Como X quiero Y para Z)
+        - ACs (al menos para R1)
+        Esta lista es el insumo directo para la sesión de Planning Poker.
+      </descripcion>
+    </entregable>
+
+  </entregables>
+
+  <instrucciones_de_trabajo>
+    <instruccion>Leer primero: guidelines/fundamentos.xml, guidelines/rubrica.xml,
+    guidelines/aprendizajes.xml, la página USM redactado en Notion, y la página
+    de Arquitectura para verificar la tabla de cobertura.</instruccion>
+    <instruccion>NO modificar el Notion directamente. Solo el sincronizador_notion puede escribir
+    a Notion bajo confirmación del usuario. Entregar los cambios como propuestas en tu XML de output.</instruccion>
+    <instruccion>El formato de las user stories debe ser consistente con el lenguaje rioplatense
+    (segunda persona, frases directas, sin "usted").</instruccion>
+    <instruccion>Si detectás historias adicionales que faltan (ej. A7 R1 vacío por diseño), marcarlo
+    explícitamente en la tabla maestra como "vacío por diseño" con su justificación.</instruccion>
+    <instruccion>Al cerrar, agregar una leccion en guidelines/aprendizajes.xml sobre el error
+    de conteo (para no repetirlo en futuras iteraciones del USM).</instruccion>
+  </instrucciones_de_trabajo>
+
+  <criterios_de_exito>
+    <criterio>El número total de historias está verificado y el documento actualizado refleja el real.</criterio>
+    <criterio>E5.0 tiene una sola ubicación con justificación.</criterio>
+    <criterio>Las 25 historias de R1 tienen ≥ 2 ACs cada una.</criterio>
+    <criterio>Las historias de A0 están en formato user story válido.</criterio>
+    <criterio>La lista para Planning Poker está ordenada, numerada y con ACs de R1.</criterio>
+  </criterios_de_exito>
+
+  <formato_output>
+    Archivo XML: tasks/2026-05-25-ux-output-usm-corregido.xml
+    Incluir:
+    - Conteo verificado con desglose por actividad
+    - Decisión sobre E5.0 con justificación
+    - Tabla maestra completa (puede ser texto estructurado dentro del XML)
+    - ACs de R1 por historia
+    - Lista final para Planning Poker
+    - Auto-evaluación contra rúbrica (ejes análisis y redacción principalmente)
+  </formato_output>
+
+  <dependencias>
+    <dependencia>Verificar con la página de Arquitectura (discusión + imagen) cuál módulo
+    gestiona el catálogo de disciplinas, para resolver E5.0.</dependencia>
+  </dependencias>
+
+</tarea_worker>
