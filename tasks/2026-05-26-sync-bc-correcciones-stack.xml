@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-05-26 21:32" autor="sincronizador_notion">
+  <origen_local>
+    tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml (E1, E2, E4, E5)
+    tasks/2026-05-25-arq-output-adr002-expandido.xml (cambios_requeridos_por_seccion: BC §4 y §5)
+  </origen_local>
+  <modo>update_content</modo>
+  <paso_del_plan>7 de 9</paso_del_plan>
+
+  <paginas_actualizadas>
+
+    <pagina id="BC §1" url="https://www.notion.so/330f2633686681da9ff1eab41640e9ec">
+      <diff>
+        + Párrafo "La problemática en UNSAM reúne características..." en subsección "El caso UNSAM"
+        ~ Callout azul: "UNSAM como piloto estratégico..." → "SIGDU nace para resolver un problema real y
+          documentado en UNSAM..." (2 párrafos, test UNSAM-centricity 3/3)
+      </diff>
+    </pagina>
+
+    <pagina id="BC §3" url="https://www.notion.so/330f2633686681638034e231df733259">
+      <diff>
+        ~ Tabla Escenarios: Conservador 3→2 clientes ($297→$198 MRR), Moderado 7→4 ($1,043→$596),
+          Optimista 12→7 ($2,148→$1,253); ARR actualizados
+        + Callout azul tras tabla Escenarios: alineación con §6 como fuente canónica
+        ~ Tabla Métricas: churn split en base &lt;10% / objetivo &lt;5% (largo plazo); LTV $1,500→$1,080;
+          break-even 3 clientes→2 clientes pagos
+        + Callout amarillo tras tabla Métricas: supuesto canónico churn 8.3%, LTV $1,788, objetivo Año 2
+      </diff>
+    </pagina>
+
+    <pagina id="BC §4" url="https://www.notion.so/330f26336866818d90c6d6a7a8fb13ef">
+      <diff>
+        ~ Fila "Dependencia de servicios terceros": "Supabase; plan de contingencia" →
+          "PostgreSQL en Railway/Render; pg_dump + pg_restore; lock-in de infraestructura, no de vendor"
+      </diff>
+    </pagina>
+
+    <pagina id="BC §5" url="https://www.notion.so/330f26336866817eb791ea8ed70c9189">
+      <diff>
+        ~ Fila Base de datos: "Supabase PostgreSQL $0-25" → "PostgreSQL en Railway/Render $5-20"
+        ~ Fila Stack tecnológico: "Next.js, Supabase, Tailwind" → "Next.js + FastAPI + PostgreSQL autogestionado"
+        + Callout azul al final del cronograma: aclaración Mes 12 = 4 meses post-lanzamiento (no del desarrollo)
+      </diff>
+    </pagina>
+
+    <pagina id="BC §6" url="https://www.notion.so/330f263368668139b46dce5e6a765d24">
+      <diff>
+        + Callout amarillo antes de "Nota sobre Unit Economics": supuesto canónico churn 8.3%, LTV $1,788
+        + Callout azul entre tabla Escenarios y "Proyección de costos": §6 es fuente canónica, alineada con §3
+      </diff>
+    </pagina>
+
+    <pagina id="BC §7" url="https://www.notion.so/330f263368668170adc1e9d5b703e60e">
+      <diff>
+        + Callout amarillo antes del callout rojo "Decisión Mes 12": aclaración timeline
+          (Mes 12 = 8 meses desarrollo + 4 meses operación comercial)
+      </diff>
+    </pagina>
+
+    <pagina id="BC §8" url="https://www.notion.so/330f26336866812b9bfff298a8a5a1ee">
+      <diff>
+        ~ Tabla revisiones, fila "Revisión anual (Mes 12)": "Dirección de UNSAM" →
+          "Equipo SIGDU + referente del Área Deportiva UNSAM"
+        + Callout naranja tras tabla: acuerdo de participación en convenio de piloto,
+          criterios (a)-(c), sin convenio no arranca Fase 2
+      </diff>
+    </pagina>
+
+  </paginas_actualizadas>
+
+  <confirmacion_usuario>"ok"</confirmacion_usuario>
+  <estado_final>exitoso</estado_final>
+  <verificacion_post>
+    Fetch de BC §1, §4 y §8 confirmaron todos los cambios aplicados.
+    Timestamps Notion post-update: 2026-05-26T21:31-21:32Z.
+    BC §3, §5, §6, §7: API response exitosa (page_id devuelto, no verificado por fetch individual).
+  </verificacion_post>
+</sincronizacion>

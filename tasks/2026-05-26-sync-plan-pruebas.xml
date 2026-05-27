@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-05-26" autor="sincronizador_notion">
+  <origen_local>
+    tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml (base: §1.1, §1.3, §2, §3, §4, §5.1-3, §5.5, §7)
+    tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas-v2.xml (override: §1.2, §1.2-bis, §5.4)
+  </origen_local>
+  <modo>create_page</modo>
+  <paso_del_plan>8 de 9</paso_del_plan>
+
+  <pagina_creada>
+    <id>36df2633-6866-81d7-9bfd-ecdbac9b36b1</id>
+    <url>https://www.notion.so/36df2633686681d79bfdecdbac9b36b1</url>
+    <titulo>Plan de Pruebas de Software</titulo>
+    <icono>🧪</icono>
+    <parent>322f263368668100b6a9fbd346cb8f09</parent>
+  </pagina_creada>
+
+  <contenido_aplicado>
+    <seccion id="§1.1">Propósito — alcance R1/R2/R3</seccion>
+    <seccion id="§1.2">Alcance con taxonomía USM A0–A6, 25 historias explícitas con E-codes (BA v2)</seccion>
+    <seccion id="§1.2-bis">Tabla equivalencia módulos backend ↔ códigos USM (BA v2, nueva)</seccion>
+    <seccion id="§1.3">Definiciones y referencias</seccion>
+    <seccion id="§2">Política de calidad (OC-1 tenant isolation, OC-2 cobertura ≥80%, OC-3 CI)</seccion>
+    <seccion id="§3">Roles del equipo (4 personas, separación developer/tester)</seccion>
+    <seccion id="§4">Estrategia de pruebas (unit/integration/E2E/performance, herramientas pytest/httpx/etc.)</seccion>
+    <seccion id="§5.1-5.3">Revisiones PR, pipeline CI 8 pasos, pruebas de regresión</seccion>
+    <seccion id="§5.4">SEC-1 (JWT), SEC-2 (search_path + E5.0), SEC-3 (catálogo público + E2.1), SEC-4 (IDOR) — BA v2</seccion>
+    <seccion id="§5.5">Pruebas de usabilidad con coordinadora UNSAM</seccion>
+    <seccion id="§7">Criterios de aprobación R1/R2/R3, proceso de sign-off, manejo de excepciones</seccion>
+  </contenido_aplicado>
+
+  <composicion>
+    BA v2 es patch sobre BA v1. §1.2 de v1 (códigos backend A1=Auth, A3=Inscripción) reemplazado
+    por §1.2 de v2 (taxonomía USM canónica). §1.2-bis nuevo. §5.4 de v1 (3 tests genéricos)
+    reemplazado por §5.4 de v2 (SEC-1 a SEC-4 con E-codes explícitos).
+  </composicion>
+
+  <estado_final>exitoso</estado_final>
+  <verificacion_post>
+    API create-pages retornó page_id 36df2633-6866-81d7-9bfd-ecdbac9b36b1 y URL confirmada.
+    Timestamp Notion post-create: 2026-05-26.
+  </verificacion_post>
+</sincronizacion>

@@ -83,6 +83,14 @@
     </pagina>
   </user_story_mapping>
 
+  <plan_de_pruebas>
+    <pagina titulo="Plan de Pruebas de Software">
+      <url>https://www.notion.so/36df2633686681d79bfdecdbac9b36b1</url>
+      <responsable_rol>business_analyst + arquitecto</responsable_rol>
+      <descripcion>Plan de pruebas del MVP: alcance USM A0-A6, estrategia unit/integration/E2E/security, roles, pipeline CI, criterios de aprobación R1/R2/R3.</descripcion>
+    </pagina>
+  </plan_de_pruebas>
+
   <arquitectura>
     <pagina titulo="Arquitectura (discusión + imagen)">
       <url>https://www.notion.so/361f26336866806990eac02b07f317ae</url>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-05-26 17:31" autor="sincronizador_notion">
+  <origen_local>
+    tasks/2026-05-25-arq-output-adr002-expandido.xml (declaracion_frontend → texto_para_guia_tecnica)
+  </origen_local>
+  <destino_notion>https://www.notion.so/361f2633686681108767e9c5a985e74b (Guía Técnica)</destino_notion>
+  <modo>update_content</modo>
+  <paso_del_plan>6 de 9</paso_del_plan>
+  <diff_aplicado>
+    ~ Callout encabezado: agregada línea "**Frontend**: Next.js 14 · TypeScript · Vercel" como primera línea del bloque.
+    + Sección "## Frontend del MVP" insertada entre §1 (Justificación del stack) y §2 (Estructura del repositorio).
+      Contenido: Tecnología, Hosting, Integración con backend (JWT httpOnly cookie, CORS), Patrón de componentes
+      (Server vs Client Components), justificación sobre Vite/SPA pura.
+      Sin renumeración de secciones existentes (§2-§10 conservan su numeración).
+  </diff_aplicado>
+  <confirmacion_usuario>"ok"</confirmacion_usuario>
+  <estado_final>exitoso</estado_final>
+  <verificacion_post>
+    Fetch confirmó callout con Frontend como primera línea y sección "## Frontend del MVP"
+    con el contenido del ARQ entre §1 y §2.
+    Timestamp Notion post-update: 2026-05-26T17:31:15.624Z.
+  </verificacion_post>
+</sincronizacion>

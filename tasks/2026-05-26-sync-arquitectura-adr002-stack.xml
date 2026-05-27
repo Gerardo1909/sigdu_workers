@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-05-26 17:11" autor="sincronizador_notion">
+  <origen_local>tasks/2026-05-25-arq-output-adr002-expandido.xml (Entregable 1 &lt;adr&gt; + Entregable 2 cambio "Arquitectura — Discusión de stack")</origen_local>
+  <destino_notion>https://www.notion.so/361f26336866806990eac02b07f317ae (Arquitectura — discusión + imagen)</destino_notion>
+  <modo>edit_selectivo</modo>
+  <paso_del_plan>1 de 9 (orden_sugerido_de_aplicacion_en_notion del scorecard v2)</paso_del_plan>
+  <diff_aplicado>
+    ~ §3 ADR-002: reemplazo total del bloque &lt;details&gt; viejo (5 líneas) por v2.0 con:
+        - Estado, Contexto, Decisión, Consecuencias positivas
+        - Sección A: R1 (migración parcial), R2 (search_path injection), R3 (pool exhaustion), R4 (schema drift)
+        - Sección B: tradeoffs cuantitativos (límite de schemas, tiempo de migración, overhead storage)
+        - Sección C: estrategia migración segura (4 pasos), query SQL de verificación, rollback selectivo, rollback total
+    + §2.5 Capa de Datos: insertado párrafo "Stack de base de datos: PostgreSQL 16 autogestionado..."
+      después del callout morado de schema-per-tenant y antes de la tabla comparativa.
+  </diff_aplicado>
+  <no_tocado_en_este_paso>
+    - §7 tabla de cobertura (sigue con "55 historias" y rango "E2.1–E2.8" en A2 sin nota) → queda para Paso 2.
+    - ADR-001, ADR-003, ADR-004 sin cambios.
+  </no_tocado_en_este_paso>
+  <confirmacion_usuario>"ok"</confirmacion_usuario>
+  <estado_final>exitoso</estado_final>
+  <notas>
+    Update aplicado vía mcp__notion__notion-update-page con command="update_content" y dos content_updates.
+    Fetch post-update verificó ambos bloques. La query SQL del bloque C se renderiza en un fenced code block dentro del details.
+    Timestamp Notion post-update: 2026-05-26T17:11:04.690Z.
+  </notas>
+</sincronizacion>

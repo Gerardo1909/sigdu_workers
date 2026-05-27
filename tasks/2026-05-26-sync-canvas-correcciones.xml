@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-05-27" autor="sincronizador_notion">
+  <origen_local>
+    tasks/2026-05-25-ba-output-bc-corregido-y-plan-pruebas.xml (E3: Revenue Streams + Recursos Clave)
+    tasks/2026-05-25-arq-output-adr002-expandido.xml (cambios_requeridos_por_seccion: Canvas infraestructura)
+  </origen_local>
+  <destino_notion>https://www.notion.so/330f2633686680919e60dd62a564b00f (Canvas)</destino_notion>
+  <modo>update_content</modo>
+  <paso_del_plan>9 de 9</paso_del_plan>
+
+  <diff_aplicado>
+    ~ Revenue Streams — bloque "Proyección conservadora":
+        ANTES: "10 clientes Pro en Año 1 = ~$2,000 USD/mes; Break-even: ~2-3 clientes"
+        DESPUÉS: referencia a BC §3 y §6; conservador = 2 clientes $99/mes = $198 MRR Mes 12;
+                 break-even = 2 clientes (~$50-65/mes en Mes 9-12)
+    ~ Recursos Clave — Stack tecnológico:
+        ANTES: "Open source (Next.js, Supabase)"
+        DESPUÉS: "Open source (Next.js + FastAPI + PostgreSQL autogestionado)"
+    ~ Recursos Clave — Infraestructura cloud:
+        ANTES: "Hosting, base de datos PostgreSQL"
+        DESPUÉS: "Vercel (frontend) · Railway/Render (FastAPI backend + PostgreSQL 16)"
+  </diff_aplicado>
+
+  <estado_final>exitoso</estado_final>
+  <verificacion_post>
+    Fetch confirmó los 3 cambios aplicados.
+    Timestamp Notion post-update: 2026-05-27T16:03:14.086Z.
+  </verificacion_post>
+</sincronizacion>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-05-26 17:16" autor="sincronizador_notion">
+  <origen_local>
+    tasks/2026-05-25-ux-output-usm-corregido-v2.xml (handoff pasos 1-3) +
+    tasks/2026-05-25-ux-output-usm-corregido.xml (entregable 1 conteo + entregable 2 resolución E5.0)
+  </origen_local>
+  <destino_notion>https://www.notion.so/361f2633686680ecb8e1fff11689f655 (USM redactado)</destino_notion>
+  <modo>edit_selectivo</modo>
+  <paso_del_plan>3 de 9</paso_del_plan>
+  <diff_aplicado>
+    - A2 R1: línea "E5.0 *(Admin)* Dar de alta una nueva disciplina al catálogo" → eliminada
+    + A5 R1: insertada "E5.0 Dar de alta una nueva disciplina al catálogo *(reasignada desde A2 — bounded context A5 según Arquitectura §2.3)*" antes de E5.1
+    ~ Tabla "Resumen por release", fila R1: "E0.1–E0.4, E1.1–E1.4, E2.1–E2.3, E5.0, E3.1–E3.3, E4.1–E4.3, E5.1–E5.4, E6.1–E6.3" → "E0.1–E0.4, E1.1–E1.4, E2.1–E2.3, E3.1–E3.3, E4.1–E4.3, E5.0–E5.4, E6.1–E6.3"
+    ~ Total: "**Total de historias: 55**" → "**Total de historias: 71**"
+  </diff_aplicado>
+  <decision_de_estilo>
+    Para E5.0 en A5 R1 se usó label corto consistente con las otras E5.x del listado.
+    El enunciado completo reformulado de v1 (item 18 del planning poker, "Como administrador
+    institucional, quiero dar de alta...") aparecerá en Paso 4 como AC, no aquí.
+    Usuario informado en el diff propuesto; confirmó con "ok".
+  </decision_de_estilo>
+  <pendiente_no_bloqueante>
+    La descripción de A2 todavía dice "...y al administrador mantener actualizado el catálogo
+    de disciplinas". Tras mover E5.0, esa frase quedó técnicamente inconsistente. No se
+    modificó porque excede el scope del handoff. Levantado al usuario para pulido posterior
+    (no bloquea sync ni evaluación: no contradice contenido factual, solo es redundante).
+  </pendiente_no_bloqueante>
+  <confirmacion_usuario>"ok"</confirmacion_usuario>
+  <estado_final>exitoso</estado_final>
+  <verificacion_post>
+    Fetch confirmó:
+    - A2 R1: 3 ítems (E2.1, E2.2, E2.3) ✓
+    - A5 R1: 5 ítems (E5.0, E5.1, E5.2, E5.3, E5.4) ✓
+    - Tabla R1: rango sin E5.0 suelto ✓
+    - Total 71 ✓
+    Timestamp Notion post-update: 2026-05-26T17:15:57.688Z.
+  </verificacion_post>
+</sincronizacion>
