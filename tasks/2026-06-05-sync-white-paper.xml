@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<sincronizacion fecha="2026-06-05" autor="sincronizador_notion">
+  <origen_local>template_white_paper.md</origen_local>
+  <destino_notion>https://www.notion.so/376f2633686681c3b4e5cbc35299e860</destino_notion>
+  <modo>creacion (primera publicacion)</modo>
+  <diff_aplicado>
+    + Pagina nueva creada bajo raiz "Ingenieria de Software - TP final (SIGDU)"
+    + Titulo: "📄 White Paper — SIGDU (condensado 5-7 págs)"
+    + 7 secciones de cuerpo (Resumen, Contexto, Propuesta, Impacto, Arquitectura, Plan, Conclusiones)
+    + Seccion 8 Anexos con placeholders A-F + referencias bibliograficas
+    + Consideraciones de formato catedra (Arial 12, 1.15, 5-7 pags)
+    - (sin borrados)
+  </diff_aplicado>
+  <confirmacion_usuario>"ok"</confirmacion_usuario>
+  <estado_final>exitoso</estado_final>
+  <flujo_completo>
+    <paso rol="project_manager">Clarificacion + plan PRINCE2 (4 etapas)</paso>
+    <paso rol="project_manager">Fetch baseline Notion (13 paginas BC/Canvas/USM/Arq/Pruebas)</paso>
+    <paso rol="redactor_bloque_A">§1 Resumen + §2 Contexto + §7 Conclusiones (subagente paralelo)</paso>
+    <paso rol="redactor_bloque_B">§3 Propuesta + §4 Beneficios (subagente paralelo)</paso>
+    <paso rol="redactor_bloque_C">§5 Arquitectura + §6 Plan/cronograma (subagente paralelo)</paso>
+    <paso rol="project_manager">Merge + unificacion de tono en template_white_paper.md</paso>
+    <paso rol="revisor">Scorecard 11/12 (Redaccion 2, resto 3), veredicto aprobar_pero_iterar, 5 hallazgos accionables</paso>
+    <paso rol="project_manager">Aplicacion de 5 fixes (TBD resuelto, anti-repeticion, nota metodologica, Figuras 1-3, tagline unico)</paso>
+    <paso rol="sincronizador_notion">Diff presentado, OK del usuario, creacion en Notion exitosa</paso>
+  </flujo_completo>
+  <auto_evaluacion_post_fix eje_analisis="3" eje_originalidad="3" eje_redaccion="3" eje_unsam="3" total="12/12"/>
+  <placeholders_pendientes>
+    <placeholder>Figura 1 — Flujo manual actual (cuerpo §2)</placeholder>
+    <placeholder>Figura 2 — Mapa funcional USM A0-A6 (cuerpo §3)</placeholder>
+    <placeholder>Figura 3 — Arquitectura SIGDU 5 capas (cuerpo §5)</placeholder>
+    <placeholder>Anexo A — Modelo financiero detallado</placeholder>
+    <placeholder>Anexo B — Gantt + registro de riesgos completo</placeholder>
+    <placeholder>Anexo C — USM completo (71 HU)</placeholder>
+    <placeholder>Anexo D — Plan de Pruebas de Software</placeholder>
+    <placeholder>Anexo E — Modelo Canvas</placeholder>
+    <placeholder>Anexo F — Figuras 1-3 ampliadas</placeholder>
+    <placeholder>Referencias bibliograficas (lista canonica)</placeholder>
+  </placeholders_pendientes>
+  <notas>
+    Usuario completa los placeholders manualmente con el material ya producido en iteraciones previas
+    (imagen de arquitectura en pagina "Arquitectura (discusion + imagen)", USM canonico, Canvas, etc).
+    notion_sources.xml actualizado con la nueva URL en seccion <white_paper>.
+  </notas>
+</sincronizacion>

@@ -7,7 +7,7 @@
   -->
 
   <metadata>
-    <ultimo_chequeo>2026-05-22</ultimo_chequeo>
+    <ultimo_chequeo>2026-06-05</ultimo_chequeo>
     <responsable_de_mantener>Project Manager + Sincronizador Notion</responsable_de_mantener>
   </metadata>
 
@@ -90,6 +90,14 @@
       <descripcion>Plan de pruebas del MVP: alcance USM A0-A6, estrategia unit/integration/E2E/security, roles, pipeline CI, criterios de aprobación R1/R2/R3.</descripcion>
     </pagina>
   </plan_de_pruebas>
+
+  <white_paper>
+    <pagina titulo="White Paper — SIGDU (condensado 5-7 págs)">
+      <url>https://www.notion.so/376f2633686681c3b4e5cbc35299e860</url>
+      <responsable_rol>project_manager + redactor + revisor + sincronizador</responsable_rol>
+      <descripcion>White Paper final condensado del TP integrador. Cuerpo 5-7 págs (secciones 1-7). Anexos A-F con placeholders pendientes de carga manual (figuras, modelo financiero, Gantt, USM completo, plan de pruebas, Canvas).</descripcion>
+    </pagina>
+  </white_paper>
 
   <arquitectura>
     <pagina titulo="Arquitectura (discusión + imagen)">
