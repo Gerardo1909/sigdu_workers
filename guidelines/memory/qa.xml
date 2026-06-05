@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<memory_shard nombre="qa">
+  <!--
+    Lecciones de QA y REVISIÓN TÉCNICA (qa_testing, code_reviewer): pytest, pytest-asyncio,
+    httpx, factory-boy, cobertura contra historias USM, review de código (ruff/mypy/diff).
+    Ambos roles leen este shard + cross.xml.
+
+    Vacío de lecciones "aprendidas" todavía: se agregan al cerrar sesión y se registra la línea
+    en memory/INDEX.xml. Cuando una llega a recurrencia>=3, el curador_memoria la pliega al rol
+    correspondiente y la marca estado="distilado".
+
+    Formato de lección:
+    <leccion id="..." fecha="YYYY-MM-DD" worker="qa_testing|code_reviewer" categoria="bug|patron|gotcha|optimizacion|seguridad|integracion" tags="..." recurrencia="N" estado="activo|distilado">
+      <contexto>...</contexto><descubrimiento>...</descubrimiento><regla>...</regla>
+    </leccion>
+  -->
+</memory_shard>

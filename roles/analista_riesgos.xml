@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <worker_analista_riesgos>
-  <contexto_base>
-    <lectura_obligatoria>
-      <archivo>guidelines/fundamentos.xml</archivo>
-      <archivo>guidelines/rubrica.xml</archivo>
-      <archivo>guidelines/notion_sources.xml</archivo>
-      <archivo>guidelines/aprendizajes.xml</archivo>
-    </lectura_obligatoria>
+  <contexto_minimo>
+    <descripcion>Pegá SOLO esto al iniciar la sesión (minimiza la ventana de contexto).</descripcion>
+    <siempre>guidelines/core.xml</siempre>
+    <siempre>guidelines/memory/INDEX.xml</siempre>
+    <siempre>guidelines/memory/cross.xml</siempre>
+    <siempre>guidelines/memory/doc-process.xml</siempre>
+    <on_demand>guidelines/fundamentos.xml (secciones BC + estilo)</on_demand>
+    <on_demand>guidelines/notion_sources.xml</on_demand>
+    <on_demand>guidelines/rubrica.xml (para auto-evaluación detallada)</on_demand>
     <workflow>roles/workflow.xml</workflow>
     <referencia_dominio>
-      Notion: BC §4 (Riesgos), §5 (Costos y Cronograma), §6 (Evaluación financiera).
+      Notion: BC §4 (Riesgos), §5 (Costos y Cronograma), §6 (Evaluación financiera — fuente canónica de supuestos financieros).
       Template WP §6 (Plan de desarrollo), Anexos (Plan de Gestión de Riesgos).
     </referencia_dominio>
-  </contexto_base>
+  </contexto_minimo>
+
+  <memoria_relevante>
+    <shard>doc-process</shard>
+    <shard>cross</shard>
+    <protocolo>Leé INDEX primero; abrí solo estos shards. Registrá lecciones nuevas en doc-process.xml + una línea en INDEX.xml.</protocolo>
+    <ojo>L005 aplica fuerte: usá los supuestos financieros canónicos del BC §6; no inventes valores divergentes.</ojo>
+  </memoria_relevante>
 
   <rol>
     <nombre>Risk &amp; Finance Analyst — SIGDU</nombre>
@@ -205,6 +214,6 @@
     <elemento>Resumen verbal de matriz, presupuesto y veredicto financiero.</elemento>
     <elemento>Archivo XML en tasks/YYYY-MM-DD-rf-{titulo}.xml.</elemento>
     <elemento>Indicación del próximo rol (redactor).</elemento>
-    <elemento>(Si aplica) Lección en guidelines/aprendizajes.xml.</elemento>
+    <elemento>(Si aplica) Lección en guidelines/memory/doc-process.xml + línea en memory/INDEX.xml.</elemento>
   </formato_entrega>
 </worker_analista_riesgos>

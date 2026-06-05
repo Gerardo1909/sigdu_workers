@@ -1,304 +1,173 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <workflow_workers_sigdu>
   <!--
-    Define cómo los 9 workers especializados de SIGDU colaboran entre sí para
-    producir y refinar los entregables del TP final (Business Case, Canvas,
-    USM, Arquitectura, White Paper). Cada worker opera en un chat
-    independiente; el resultado de uno se pasa como input al siguiente.
+    Cómo colaboran los workers de SIGDU. Dos tracks:
+      - TRACK DOC: produce y refina entregables del TP (BC, Canvas, USM, Arquitectura, White Paper).
+      - TRACK DEV: construye el MVP funcional (repo de código separado: FastAPI + Next.js 14).
+    El arquitecto es la bisagra entre ambos. Cada worker corre en un chat independiente.
   -->
 
   <objetivo>
-    Convertir pedidos del usuario (refinamiento de una sección, redacción de un fragmento,
-    análisis de riesgos, etc.) en outputs verificables contra la rúbrica de la cátedra,
-    manteniendo contexto persistente entre sesiones mediante archivos compartidos.
+    Convertir pedidos del usuario en outputs verificables (track doc: contra la rúbrica; track dev:
+    contra Definition of Done técnico), manteniendo contexto persistente entre sesiones mediante
+    archivos compartidos y memoria sharded por tipo de tarea.
   </objetivo>
 
   <directorios_de_trabajo>
-    <directorio path="guidelines/" permisos="lectura">
-      Fundamentos compartidos, rúbrica, fuentes Notion, aprendizajes. Todos los workers leen estos archivos al inicio.
-    </directorio>
-    <directorio path="roles/" permisos="lectura">
-      Definición de cada worker y este workflow.
-    </directorio>
-    <directorio path="tasks/" permisos="lectura/escritura">
-      Output canónico de cada worker. Se lee como input por workers posteriores.
-    </directorio>
-    <directorio path="guidelines/aprendizajes.xml" permisos="lectura/escritura">
-      Único archivo de guidelines/ que se actualiza: workers agregan lecciones al cierre.
-    </directorio>
-    <directorio path="Notion" permisos="lectura">
-      Fuente de verdad de la cátedra. Solo el sincronizador_notion puede escribir, y solo con confirmación del usuario.
-    </directorio>
+    <directorio path="guidelines/core.xml" permisos="lectura">Núcleo invariante. Se pega SIEMPRE.</directorio>
+    <directorio path="guidelines/memory/" permisos="lectura/escritura">Memoria sharded. Se lee INDEX + el shard del rol; se agregan lecciones al cierre.</directorio>
+    <directorio path="guidelines/fundamentos.xml | rubrica.xml | notion_sources.xml" permisos="lectura">Detalle on-demand. Solo lo carga el rol que lo necesita (ver su contexto_minimo).</directorio>
+    <directorio path="roles/" permisos="lectura">Definición de cada worker y este workflow.</directorio>
+    <directorio path="tasks/" permisos="lectura/escritura">Output canónico de cada worker + PROGRESO.md (tablero).</directorio>
+    <directorio path="Notion" permisos="lectura">Fuente de verdad de la cátedra. Solo sincronizador_notion escribe, con confirmación.</directorio>
+    <directorio path="(repo de código separado)" permisos="lectura/escritura">Lo operan los roles dev. Path declarado al inicio de la sesión.</directorio>
   </directorios_de_trabajo>
 
+  <routing_de_memoria>
+    <descripcion>
+      Cada worker lee guidelines/memory/INDEX.xml (barato) + cross.xml (siempre) + el shard de su tipo
+      de tarea. NO se leen todos los shards. Esto minimiza la ventana de contexto.
+    </descripcion>
+    <ruta worker="project_manager, business_analyst, arquitecto, disenador_ux, analista_riesgos, redactor, revisor, presentador" shards="doc-process, cross" />
+    <ruta worker="backend_dev" shards="backend, cross" />
+    <ruta worker="frontend_dev" shards="frontend, cross" />
+    <ruta worker="qa_testing, code_reviewer" shards="qa, cross" />
+    <ruta worker="curador_memoria" shards="TODOS (consolida)" />
+  </routing_de_memoria>
+
+  <protocolo_progreso>
+    <descripcion>
+      tasks/PROGRESO.md es el tablero vivo. Una fila por work item. Cada worker la actualiza.
+    </descripcion>
+    <paso n="1" momento="al abrir">Buscar el work item en PROGRESO.md. Si no existe, crear la fila. Poner estado="en_progreso" y rol_actual=tu rol.</paso>
+    <paso n="2" momento="al cerrar">Actualizar estado (en_revision | aprobado | bloqueado), agregar link al output en tasks/, fecha y proximo_rol.</paso>
+    <estados>pendiente · en_progreso · bloqueado · en_revision · aprobado</estados>
+  </protocolo_progreso>
+
+  <ritual_destilacion>
+    <descripcion>
+      Mecanismo de mejora progresiva de los prompts. Las lecciones recurrentes se pliegan dentro
+      de los roles para que dejen de ocupar contexto en runtime.
+    </descripcion>
+    <cuando>Al cerrar una etapa grande, o cuando el INDEX de memoria supera ~20 lecciones activas.</cuando>
+    <quien>roles/curador_memoria.xml (on-demand).</quien>
+    <regla>Lección con recurrencia &gt;= 3 (o marcada estable) -> el curador pliega su &lt;regla&gt; dentro de
+    &lt;instrucciones_operativas&gt; del rol correspondiente (o de core.xml si es universal), marca la
+    lección estado="distilado" y actualiza su línea en INDEX. Las distiladas no se leen en runtime.</regla>
+  </ritual_destilacion>
+
   <roles>
-    <rol nombre="project_manager" tipo="flujo_principal" orden="1">
-      <responsabilidad>
-        Recibir pedidos, clarificar alcance, definir etapas/hitos PRINCE2, mantener viva la
-        justificación de negocio. Es la puerta de entrada del flujo.
-      </responsabilidad>
+    <!-- ===================== TRACK DOC ===================== -->
+    <rol nombre="project_manager" track="doc" orden="1">
+      <responsabilidad>Recibir pedidos, clarificar alcance, definir etapas/hitos PRINCE2, mantener viva la justificación de negocio. Puerta de entrada.</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-pm-{titulo}.xml</escribe_en>
-      <recibe>Descripción del pedido del usuario.</recibe>
-      <entrega>XML con scope, etapas, hitos, criterios de aceptación, decisión continuar/cancelar.</entrega>
     </rol>
-
-    <rol nombre="business_analyst" tipo="flujo_principal" orden="2">
-      <responsabilidad>
-        Levantar evidencia del problema, definir contexto, beneficios cuali/cuanti, KPIs SMART.
-        Garantiza que la problemática sea UNSAM-central.
-      </responsabilidad>
+    <rol nombre="business_analyst" track="doc" orden="2">
+      <responsabilidad>Evidencia del problema, beneficios cuali/cuanti, KPIs SMART, problemática UNSAM-central.</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-ba-{titulo}.xml</escribe_en>
-      <recibe>XML del PM + acceso a Notion (Razones, Beneficios, Canvas).</recibe>
-      <entrega>XML con problema, evidencia, impacto, beneficios, indicadores.</entrega>
     </rol>
-
-    <rol nombre="arquitecto" tipo="flujo_principal" orden="3a">
-      <responsabilidad>
-        Diseñar arquitectura de alto nivel, evaluar estilos arquitectónicos, definir stack,
-        atributos de calidad (no funcionales) y alcance MVP/PoC.
-      </responsabilidad>
+    <rol nombre="arquitecto" track="doc+dev (bisagra)" orden="3a">
+      <responsabilidad>Arquitectura de alto nivel, estilos, stack, atributos de calidad, alcance MVP/PoC. Define lo que los roles dev construyen.</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-arq-{titulo}.xml</escribe_en>
-      <recibe>XML del PM + XML del BA + acceso a Notion (Arquitectura, MVP, Estilos).</recibe>
-      <entrega>XML con diagrama (Mermaid), atributos de calidad, stack, MVP scope, trade-offs.</entrega>
     </rol>
-
-    <rol nombre="disenador_ux" tipo="flujo_principal" orden="3b">
-      <responsabilidad>
-        Definir personas, segmentos, canales, User Story Mapping y mockups. Trabaja en paralelo
-        al arquitecto.
-      </responsabilidad>
+    <rol nombre="disenador_ux" track="doc" orden="3b">
+      <responsabilidad>Personas, segmentos, canales, USM y mockups. Paralelo al arquitecto.</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-ux-{titulo}.xml</escribe_en>
-      <recibe>XML del PM + XML del BA + acceso a Notion (USM redactado, USM visual, Canvas).</recibe>
-      <entrega>XML con personas, journeys, USM, canales, requisitos UX.</entrega>
     </rol>
-
-    <rol nombre="analista_riesgos" tipo="flujo_principal" orden="4">
-      <responsabilidad>
-        Identificar riesgos clave, estimar costos, armar cronograma, hacer evaluación financiera
-        simplificada (VAN/TIR/payback).
-      </responsabilidad>
+    <rol nombre="analista_riesgos" track="doc" orden="4">
+      <responsabilidad>Riesgos, costos, cronograma, evaluación financiera (VAN/TIR/payback).</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-rf-{titulo}.xml</escribe_en>
-      <recibe>XMLs del Arq y UX (definen el alcance que se costea) + XML del BA (beneficios esperados).</recibe>
-      <entrega>XML con matriz de riesgos, presupuesto, cronograma, evaluación financiera, plan de mitigación.</entrega>
     </rol>
-
-    <rol nombre="redactor" tipo="flujo_principal" orden="5">
-      <responsabilidad>
-        Integrar todos los outputs anteriores en el white paper final (5-7 págs, formato cátedra).
-        Cuida voz, longitud, consistencia.
-      </responsabilidad>
-      <escribe_en>tasks/YYYY-MM-DD-wp-vN.md (no XML; es el documento)</escribe_en>
-      <recibe>XMLs de PM, BA, Arq, UX, Riesgos.</recibe>
-      <entrega>White paper en Markdown listo para maquetar, con auto-evaluación contra rúbrica.</entrega>
+    <rol nombre="redactor" track="doc" orden="5">
+      <responsabilidad>Integra todos los outputs en el white paper final (5-7 págs, formato cátedra).</responsabilidad>
+      <escribe_en>tasks/YYYY-MM-DD-wp-vN.md</escribe_en>
     </rol>
-
-    <rol nombre="revisor" tipo="flujo_principal" orden="6">
-      <responsabilidad>
-        Evaluar el output del redactor (o cualquier artefacto) contra los 4 ejes de la rúbrica,
-        emitir scorecard y acciones correctivas.
-      </responsabilidad>
+    <rol nombre="revisor" track="doc" orden="6">
+      <responsabilidad>Evalúa contra los 4 ejes de la rúbrica; scorecard + acciones correctivas.</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-rev-{titulo}.xml</escribe_en>
-      <recibe>Artefacto a revisar + rúbrica estructurada.</recibe>
-      <entrega>Scorecard 0-3 por eje, comentarios con cita textual, lista de acciones correctivas, veredicto.</entrega>
     </rol>
 
-    <rol nombre="sincronizador_notion" tipo="on_demand">
-      <responsabilidad>
-        Llevar cambios del repo local a Notion bajo confirmación explícita del usuario.
-        Genera diff antes de escribir.
-      </responsabilidad>
-      <escribe_en>Notion (vía MCP) — SOLO con confirmación.</escribe_en>
-      <recibe>Output local a sincronizar + URL Notion destino.</recibe>
-      <entrega>Diff propuesto + confirmación de update completado.</entrega>
+    <!-- ===================== TRACK DEV ===================== -->
+    <rol nombre="backend_dev" track="dev">
+      <responsabilidad>Construye el backend del MVP: FastAPI + SQLAlchemy 2.0 async + Alembic + Pydantic v2, PostgreSQL 16 schema-per-tenant. Evaluado por Definition of Done técnico, no por la rúbrica.</responsabilidad>
+      <escribe_en>(repo de código) + tasks/YYYY-MM-DD-be-{titulo}.md (handoff)</escribe_en>
+    </rol>
+    <rol nombre="frontend_dev" track="dev">
+      <responsabilidad>Construye el frontend del MVP: Next.js 14 App Router + TypeScript, cliente de API tipado, manejo de tenant.</responsabilidad>
+      <escribe_en>(repo de código) + tasks/YYYY-MM-DD-fe-{titulo}.md (handoff)</escribe_en>
+    </rol>
+    <rol nombre="qa_testing" track="dev">
+      <responsabilidad>Plan de pruebas + tests (pytest/pytest-asyncio/httpx/factory-boy y frontend). Mapea cobertura contra historias USM (A0–A6).</responsabilidad>
+      <escribe_en>(repo de código: tests) + tasks/YYYY-MM-DD-qa-{titulo}.md</escribe_en>
+    </rol>
+    <rol nombre="code_reviewer" track="dev">
+      <responsabilidad>Revisión técnica del diff: correctitud, tests, types/lint (ruff/mypy), seguridad, simplicidad/reuso. Distinto del revisor académico.</responsabilidad>
+      <escribe_en>tasks/YYYY-MM-DD-cr-{titulo}.md</escribe_en>
     </rol>
 
-    <rol nombre="presentador" tipo="on_demand">
-      <responsabilidad>
-        Armar guion de exposición oral, slides clave, posibles preguntas del tribunal y respuestas modelo.
-      </responsabilidad>
+    <!-- ===================== ON-DEMAND ===================== -->
+    <rol nombre="sincronizador_notion" track="on_demand">
+      <responsabilidad>Único worker que escribe en Notion. Genera diff y pide confirmación explícita.</responsabilidad>
+      <escribe_en>Notion (con "OK") + tasks/YYYY-MM-DD-sync-{titulo}.xml</escribe_en>
+    </rol>
+    <rol nombre="presentador" track="on_demand">
+      <responsabilidad>Guion de defensa oral, slides clave, banco de preguntas/respuestas.</responsabilidad>
       <escribe_en>tasks/YYYY-MM-DD-pres-{titulo}.md</escribe_en>
-      <recibe>White paper final + Business Case + scorecards del revisor.</recibe>
-      <entrega>Guion (8-12 min), outline de slides, banco de preguntas y respuestas.</entrega>
+    </rol>
+    <rol nombre="curador_memoria" track="on_demand">
+      <responsabilidad>Consolida la memoria: detecta lecciones recurrentes/estables, propone edits a los prompts (destilación), poda y marca distilado.</responsabilidad>
+      <escribe_en>guidelines/memory/* + (propuesta de diff a) roles/* + tasks/YYYY-MM-DD-cur-{titulo}.md</escribe_en>
     </rol>
   </roles>
 
-  <flujo_tipico>
-    <descripcion>
-      Secuencia recomendada para producir o refinar una sección completa del proyecto.
-      No todas las tareas requieren todos los pasos; ver flujos abreviados más abajo.
-    </descripcion>
+  <flujo_doc>
+    <descripcion>Secuencia para producir o refinar una sección del proyecto. No toda tarea requiere todos los pasos.</descripcion>
+    <paso numero="1" worker="project_manager">3-5 preguntas clarificadoras; XML con scope, etapas, hitos, criterios.</paso>
+    <paso numero="2" worker="business_analyst">Problema, evidencia, beneficios cuantificados, indicadores SMART, validación UNSAM.</paso>
+    <paso numero="3" worker="arquitecto Y disenador_ux (paralelo)">Si van en serie, recomendado UX primero (arquitecto conoce journeys).</paso>
+    <paso numero="4" worker="analista_riesgos">Matriz, presupuesto, cronograma, evaluación financiera sobre el alcance definido.</paso>
+    <paso numero="5" worker="redactor">Integra los 5 XMLs en el WP (template, 5-7 págs). Auto-evaluación antes de cerrar.</paso>
+    <paso numero="6" worker="revisor">Scorecard 0-3 por eje. Eje &lt; 2 -> vuelve al rol responsable. Todos = 3 -> aprobar.</paso>
+  </flujo_doc>
 
-    <paso numero="1" worker="project_manager">
-      <accion>
-        El usuario describe lo que necesita. El PM hace 3-5 preguntas clarificadoras
-        y genera un archivo XML en tasks/ con scope, etapas, hitos y criterios de aceptación.
-      </accion>
-      <handoff>Pegar al siguiente chat: contenido del XML del PM + decisión del usuario.</handoff>
-    </paso>
-
-    <paso numero="2" worker="business_analyst">
-      <accion>
-        Lee Notion (Razones, Beneficios, Canvas) y produce un XML con problema, evidencia,
-        beneficios cuantificados, indicadores SMART y validación UNSAM-central.
-      </accion>
-      <handoff>Pegar al siguiente chat: XML del BA + referencia al XML del PM.</handoff>
-    </paso>
-
-    <paso numero="3" worker="arquitecto Y disenador_ux (paralelo)">
-      <accion>
-        Pueden ejecutarse en chats simultáneos. Cada uno produce su XML.
-        Si se ejecutan en serie, recomendado UX primero (para que el arquitecto conozca journeys).
-      </accion>
-      <handoff>Pegar al siguiente chat: ambos XMLs + referencias a PM y BA.</handoff>
-    </paso>
-
-    <paso numero="4" worker="analista_riesgos">
-      <accion>
-        Toma los entregables previos (define el alcance a costear). Genera matriz, presupuesto,
-        cronograma, evaluación financiera.
-      </accion>
-      <handoff>Pegar al siguiente chat: XML de Riesgos + todos los anteriores.</handoff>
-    </paso>
-
-    <paso numero="5" worker="redactor">
-      <accion>
-        Integra los 5 XMLs (PM, BA, Arq, UX, Riesgos) en un white paper en Markdown
-        siguiendo el template y respetando el límite de 5-7 páginas.
-        Hace auto-evaluación contra la rúbrica antes de cerrar.
-      </accion>
-      <handoff>Pegar al siguiente chat: white paper + auto-evaluación.</handoff>
-    </paso>
-
-    <paso numero="6" worker="revisor">
-      <accion>
-        Evalúa contra los 4 ejes de la rúbrica. Devuelve scorecard 0-3 por eje + comentarios + acciones.
-      </accion>
-      <handoff>
-        Si algún eje &lt; 2: vuelve al worker correspondiente con las acciones correctivas como input.
-        Si todos &gt;= 2 y meta es 3/3: iterar focalizado en los ejes &lt; 3.
-        Si todos = 3: aprobar.
-      </handoff>
-    </paso>
-
-    <paso numero="7" worker="sincronizador_notion" opcional="true">
-      <accion>
-        Cuando el usuario quiere subir el resultado a Notion. Genera diff y pide confirmación.
-      </accion>
-    </paso>
-
-    <paso numero="8" worker="presentador" opcional="true">
-      <accion>
-        Cerca de la defensa oral, arma guion y prep para preguntas.
-      </accion>
-    </paso>
-  </flujo_tipico>
+  <flujo_dev>
+    <descripcion>Construcción del MVP. Arranca cuando el arquitecto ya definió stack y alcance MVP.</descripcion>
+    <paso numero="0" worker="arquitecto">Define MVP scope, contratos de API, modelo de datos multi-tenant. Es el input de los roles dev.</paso>
+    <paso numero="1" worker="backend_dev Y frontend_dev (paralelo)">Backend expone API tipada; frontend la consume. El contrato (OpenAPI / schemas Pydantic) es la fuente de verdad compartida.</paso>
+    <paso numero="2" worker="qa_testing">Tests sobre lo construido; cobertura mapeada a historias USM. Reporta gaps.</paso>
+    <paso numero="3" worker="code_reviewer">Revisa el diff; scorecard técnico; acciones. Eje en rojo -> vuelve al rol dev responsable.</paso>
+    <paso numero="4" worker="sincronizador_notion" opcional="true">Documentar avance del MVP en Notion (Guía Técnica) si el usuario lo pide.</paso>
+  </flujo_dev>
 
   <flujos_abreviados>
-    <descripcion>
-      Atajos para tareas focalizadas que NO requieren el flujo completo.
-    </descripcion>
-
-    <flujo nombre="fix_redaccion">
-      <descripcion>Solo mejorar la redacción de un fragmento existente.</descripcion>
-      <secuencia>redactor → revisor (eje Redacción y Presentación)</secuencia>
-    </flujo>
-
-    <flujo nombre="ajuste_riesgos">
-      <descripcion>Recalcular costos o sumar un riesgo nuevo.</descripcion>
-      <secuencia>analista_riesgos → redactor (actualiza WP §6) → revisor</secuencia>
-    </flujo>
-
-    <flujo nombre="refinar_problematica_unsam">
-      <descripcion>Subir el score en el eje UNSAM (típicamente cuando revisor da 1 o 2).</descripcion>
-      <secuencia>business_analyst (re-evidencia UNSAM-central) → redactor → revisor</secuencia>
-    </flujo>
-
-    <flujo nombre="alternativa_arquitectonica">
-      <descripcion>Evaluar un cambio de estilo arquitectónico o stack.</descripcion>
-      <secuencia>arquitecto (2+ enfoques) → analista_riesgos (impacto en costos) → redactor → revisor</secuencia>
-    </flujo>
-
-    <flujo nombre="solo_review">
-      <descripcion>Revisar un artefacto existente sin producir.</descripcion>
-      <secuencia>revisor (solo)</secuencia>
-    </flujo>
-
-    <flujo nombre="publicar_a_notion">
-      <descripcion>Subir un output local a Notion.</descripcion>
-      <secuencia>sincronizador_notion (diff → confirmación → update)</secuencia>
-    </flujo>
+    <flujo nombre="fix_redaccion">redactor → revisor (eje Redacción)</flujo>
+    <flujo nombre="ajuste_riesgos">analista_riesgos → redactor → revisor</flujo>
+    <flujo nombre="refinar_problematica_unsam">business_analyst → redactor → revisor</flujo>
+    <flujo nombre="alternativa_arquitectonica">arquitecto (2+ enfoques) → analista_riesgos → redactor → revisor</flujo>
+    <flujo nombre="solo_review">revisor (solo) | code_reviewer (solo, para código)</flujo>
+    <flujo nombre="feature_backend">arquitecto (contrato) → backend_dev → qa_testing → code_reviewer</flujo>
+    <flujo nombre="feature_frontend">backend_dev (API lista) → frontend_dev → qa_testing → code_reviewer</flujo>
+    <flujo nombre="publicar_a_notion">sincronizador_notion (diff → confirmación → update)</flujo>
+    <flujo nombre="consolidar_memoria">curador_memoria (destila lecciones recurrentes a los prompts)</flujo>
   </flujos_abreviados>
 
   <reglas_generales>
-    <regla nombre="Un chat, un rol">
-      Nunca mezclar roles en una misma sesión. Cada worker tiene su propio chat para mantener
-      contexto limpio y enfocado.
-    </regla>
-
-    <regla nombre="Formato de handoff">
-      Al pasar info entre chats incluir SIEMPRE:
-        1. Pedido original del usuario o referencia al XML del PM.
-        2. Output XML completo del worker anterior.
-        3. Decisiones del usuario aplicables (enfoque elegido, feedback, exclusiones).
-    </regla>
-
-    <regla nombre="Lectura obligatoria al inicio">
-      Todo worker DEBE leer al inicio de su sesión:
-        - guidelines/fundamentos.xml
-        - guidelines/rubrica.xml
-        - guidelines/notion_sources.xml
-        - guidelines/aprendizajes.xml
-      No son opcionales. Si el worker no los lee, va a perder contexto y producir output inconsistente.
-    </regla>
-
-    <regla nombre="Auto-evaluación antes de entregar">
-      Cada worker simula el scorecard del revisor sobre su propio output y lo declara en
-      una sección &lt;auto_evaluacion&gt;. Si predice score &lt; 2 en algún eje, itera antes de cerrar.
-    </regla>
-
-    <regla nombre="Registrar aprendizajes al cierre">
-      Si en la sesión hubo correcciones del usuario, gotchas o patrones nuevos,
-      agregar una &lt;leccion&gt; a guidelines/aprendizajes.xml antes de terminar.
-    </regla>
-
-    <regla nombre="Output local, escritura a Notion controlada">
-      Workers escriben SOLO en tasks/ y en guidelines/aprendizajes.xml.
-      La escritura a Notion la hace el sincronizador_notion bajo confirmación del usuario.
-    </regla>
-
-    <regla nombre="Workers on-demand fuera del flujo">
-      sincronizador_notion y presentador NO forman parte de la secuencia 1-6.
-      Se invocan en cualquier momento sin handoff formal.
-    </regla>
-
-    <regla nombre="Iteración hasta excelencia">
-      El flujo termina cuando el revisor da 3/3 en los 4 ejes, no antes.
-      Score 2 en algún eje obliga a iterar focalizado en ese eje.
-    </regla>
+    <regla nombre="Un chat, un rol">Nunca mezclar roles en una misma sesión.</regla>
+    <regla nombre="Formato de handoff">Al pasar info entre chats incluir: (1) pedido original o referencia al XML del PM, (2) output completo del worker anterior, (3) decisiones del usuario aplicables.</regla>
+    <regla nombre="Lectura mínima al inicio">Todo worker lee guidelines/core.xml + memory/INDEX.xml + memory/cross.xml + el shard de su tipo de tarea. Carga fundamentos/rubrica/notion_sources SOLO si su contexto_minimo lo indica.</regla>
+    <regla nombre="Auto-evaluación (doc) / DoD (dev)">Roles doc declaran &lt;auto_evaluacion&gt; (4 ejes). Roles dev declaran su Definition of Done técnico antes de entregar.</regla>
+    <regla nombre="Registrar aprendizajes al cierre">Si hubo corrección/gotcha/patrón, agregar &lt;leccion&gt; al shard correspondiente y una línea a memory/INDEX.xml.</regla>
+    <regla nombre="Actualizar progreso">Actualizar tasks/PROGRESO.md al abrir y al cerrar.</regla>
+    <regla nombre="Escritura a Notion controlada">Solo sincronizador_notion, con "OK" explícito.</regla>
+    <regla nombre="Iteración hasta excelencia">Doc: termina con revisor 3/3 en los 4 ejes. Dev: termina con code_reviewer sin ejes en rojo y tests verdes.</regla>
   </reglas_generales>
 
   <guardrails>
-    <guardrail nombre="No inventar datos">
-      Cualquier afirmación cuantitativa debe citar fuente o marcarse como [TBD].
-      NUNCA llenar con números plausibles.
-    </guardrail>
-
-    <guardrail nombre="No contradecir Notion sin marcarlo">
-      Si un worker propone divergir de lo que está en Notion, debe declarar:
-        "DIVERGENCIA DE NOTION: [sección] dice X, propongo Y porque Z"
-      Y dejar la decisión al usuario.
-    </guardrail>
-
-    <guardrail nombre="No exceder 7 páginas en el WP">
-      El redactor controla longitud. Si excede, recorta antes de entregar (no se hace en revisión).
-    </guardrail>
-
-    <guardrail nombre="No saltarse el revisor">
-      Ningún artefacto se considera "listo para Notion" sin haber pasado por revisor con score &gt;= 2 en los 4 ejes.
-    </guardrail>
-
-    <guardrail nombre="Confirmar antes de escribir a Notion">
-      El sincronizador_notion siempre presenta un diff y pide "OK" explícito antes de ejecutar el update.
-    </guardrail>
+    <guardrail nombre="No inventar datos">Afirmación cuantitativa cita fuente o se marca [TBD].</guardrail>
+    <guardrail nombre="No contradecir Notion sin marcarlo">"DIVERGENCIA DE NOTION: [sección] dice X, propongo Y porque Z".</guardrail>
+    <guardrail nombre="No exceder 7 páginas en el WP">El redactor controla longitud antes de entregar.</guardrail>
+    <guardrail nombre="No saltarse la revisión">Doc: ningún artefacto va a Notion sin revisor &gt;= 2 en los 4 ejes. Dev: ningún merge sin code_reviewer + tests verdes.</guardrail>
+    <guardrail nombre="Confirmar antes de escribir a Notion">El sincronizador presenta diff y pide "OK".</guardrail>
+    <guardrail nombre="Migraciones de BD como operación de alto riesgo">backend_dev nunca aplica una migración Alembic sin revisar el SQL generado y confirmar que es reversible.</guardrail>
   </guardrails>
 </workflow_workers_sigdu>

@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <worker_redactor>
-  <contexto_base>
-    <lectura_obligatoria>
-      <archivo>guidelines/fundamentos.xml</archivo>
-      <archivo>guidelines/rubrica.xml</archivo>
-      <archivo>guidelines/notion_sources.xml</archivo>
-      <archivo>guidelines/aprendizajes.xml</archivo>
-      <archivo>template_white_paper.md</archivo>
-    </lectura_obligatoria>
+  <contexto_minimo>
+    <descripcion>Pegá SOLO esto al iniciar la sesión (minimiza la ventana de contexto).</descripcion>
+    <siempre>guidelines/core.xml</siempre>
+    <siempre>guidelines/memory/INDEX.xml</siempre>
+    <siempre>guidelines/memory/cross.xml</siempre>
+    <siempre>guidelines/memory/doc-process.xml</siempre>
+    <siempre>template_white_paper.md (8 secciones obligatorias)</siempre>
+    <siempre>guidelines/rubrica.xml (especial atención al eje "Redacción y Presentación")</siempre>
+    <on_demand>guidelines/fundamentos.xml (estilo + secciones BC)</on_demand>
     <workflow>roles/workflow.xml</workflow>
-    <referencia_dominio>
-      Template oficial: template_white_paper.md (8 secciones obligatorias).
-      Rúbrica: especial atención al eje "Redacción y Presentación".
-    </referencia_dominio>
-  </contexto_base>
+    <referencia_dominio>Template oficial: template_white_paper.md. Límite duro: 5-7 páginas de contenido.</referencia_dominio>
+  </contexto_minimo>
+
+  <memoria_relevante>
+    <shard>doc-process</shard>
+    <shard>cross</shard>
+    <protocolo>Leé INDEX primero; abrí solo estos shards. Registrá lecciones nuevas en doc-process.xml + una línea en INDEX.xml.</protocolo>
+    <ojo>Integrás todos los XMLs: cruzá números entre secciones (L004, L005) y respetá la fuente canónica del stack (L003) al redactar §5.</ojo>
+  </memoria_relevante>
 
   <rol>
     <nombre>Technical Writer — SIGDU</nombre>
@@ -239,6 +244,6 @@
         >Bloque de auto-evaluación al final del archivo (visible para revisor).</elemento>
     <elemento>Conteo de palabras declarado en metadata.</elemento>
     <elemento>Indicación del próximo rol (revisor).</elemento>
-    <elemento>(Si aplica) Lección en guidelines/aprendizajes.xml.</elemento>
+    <elemento>(Si aplica) Lección en guidelines/memory/doc-process.xml + línea en memory/INDEX.xml.</elemento>
   </formato_entrega>
 </worker_redactor>

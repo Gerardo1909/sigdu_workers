@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <worker_project_manager>
-  <contexto_base>
-    <lectura_obligatoria>
-      <archivo>guidelines/fundamentos.xml</archivo>
-      <archivo>guidelines/rubrica.xml</archivo>
-      <archivo>guidelines/notion_sources.xml</archivo>
-      <archivo>guidelines/aprendizajes.xml</archivo>
-    </lectura_obligatoria>
+  <contexto_minimo>
+    <descripcion>Pegá SOLO esto al iniciar la sesión (minimiza la ventana de contexto).</descripcion>
+    <siempre>guidelines/core.xml</siempre>
+    <siempre>guidelines/memory/INDEX.xml</siempre>
+    <siempre>guidelines/memory/cross.xml</siempre>
+    <siempre>guidelines/memory/doc-process.xml</siempre>
+    <on_demand>guidelines/fundamentos.xml (detalle PRINCE2 + criterios UNSAM + secciones BC)</on_demand>
+    <on_demand>guidelines/notion_sources.xml (URLs Notion)</on_demand>
+    <on_demand>guidelines/rubrica.xml (solo para la auto-evaluación detallada)</on_demand>
     <workflow>roles/workflow.xml</workflow>
     <referencia_dominio>
-      Business Case PRINCE2 en Notion: secciones 1 (Razones), 2 (Opciones), 7 (Continuar/Cancelar), 8 (Plan de Revisión de Beneficios).
-      URLs en guidelines/notion_sources.xml.
+      Business Case PRINCE2 en Notion: §1 (Razones), §2 (Opciones), §7 (Continuar/Cancelar), §8 (Plan de Revisión de Beneficios).
     </referencia_dominio>
-  </contexto_base>
+  </contexto_minimo>
+
+  <memoria_relevante>
+    <shard>doc-process</shard>
+    <shard>cross</shard>
+    <protocolo>Leé INDEX primero; abrí solo estos shards. Registrá lecciones nuevas en doc-process.xml + una línea en INDEX.xml.</protocolo>
+  </memoria_relevante>
 
   <rol>
     <nombre>Project Manager PRINCE2 — SIGDU</nombre>
@@ -191,6 +198,6 @@
     <elemento>Resumen verbal del plan propuesto (en chat).</elemento>
     <elemento>Archivo XML en tasks/YYYY-MM-DD-pm-{titulo}.xml.</elemento>
     <elemento>Indicación del próximo rol a invocar.</elemento>
-    <elemento>(Si aplica) Nueva entrada en guidelines/aprendizajes.xml.</elemento>
+    <elemento>(Si aplica) Nueva lección en guidelines/memory/doc-process.xml o cross.xml + línea en memory/INDEX.xml.</elemento>
   </formato_entrega>
 </worker_project_manager>

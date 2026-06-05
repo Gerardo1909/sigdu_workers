@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<memory_shard nombre="doc-process">
+  <!--
+    Lecciones del PROCESO DOCUMENTAL: roles project_manager, business_analyst, arquitecto,
+    disenador_ux, analista_riesgos, redactor, revisor, presentador.
+    Foco: rúbrica, narrativa UNSAM, supuestos financieros, ownership de historias, handoffs a Notion.
+    Estos roles leen este shard + cross.xml.
+
+    Formato de lección:
+    <leccion id="..." fecha="YYYY-MM-DD" worker="..." categoria="..." tags="..." recurrencia="N" estado="activo|distilado">
+      <contexto>...</contexto><descubrimiento>...</descubrimiento><regla>...</regla>
+    </leccion>
+  -->
+
+  <leccion id="L002" fecha="2026-05-25" worker="project_manager" categoria="patron" tags="unsam,rubrica,narrativa,business-case" recurrencia="2" estado="activo">
+    <contexto>Evaluación del eje "Solución a problemática UNSAM" durante la auditoría.</contexto>
+    <descubrimiento>BC §1 tenía un callout que decía que UNSAM es solo el piloto y no el mercado objetivo. Contradice el criterio de rúbrica nivel 3. El test rápido (¿si quitamos UNSAM la solución tiene sentido idéntico?) daría SÍ porque la narrativa era genérica.</descubrimiento>
+    <regla>NUNCA declarar que UNSAM es solo un cliente de validación. Narrativa correcta: SIGDU resuelve un problema real en UNSAM y ese éxito habilita la expansión comercial. Aplicar el test de rúbrica antes de cerrar el BC §1: si quitar "UNSAM" no cambia la narrativa, agregar evidencia específica de la institución.</regla>
+  </leccion>
+
+  <leccion id="L005" fecha="2026-05-25" worker="business_analyst" categoria="patron" tags="finanzas,churn,ltv,supuestos" recurrencia="1" estado="activo">
+    <contexto>Hallazgo I2: churn 5% en BC §3 vs 8.3% en BC §6, mismo término sin nota. El LTV de §6 ($1,788) usaba 8.3% pero el target de §3 era 5%, haciendo el LTV incoherente con el target de la misma sección.</contexto>
+    <descubrimiento>Cuando dos secciones usan el mismo indicador con valores distintos sin nota, el evaluador lo lee como error. El problema no es tener dos valores, sino no declarar cuál es el supuesto base (para cálculos) y cuál el objetivo futuro.</descubrimiento>
+    <regla>Cada supuesto financiero (churn, CAC, precio, conversión) tiene UN valor canónico declarado con nota "supuesto base para todos los cálculos". El target a largo plazo se declara como tal en la misma tabla. Fuente canónica de supuestos: §6; §3 referencia a §6. No actualizar uno sin el otro.</regla>
+  </leccion>
+
+  <leccion id="L006" fecha="2026-05-25" worker="disenador_ux" categoria="bug" tags="usm,conteo,arquitectura" recurrencia="2" estado="activo">
+    <contexto>Corrección del USM previo a Planning Poker. El PM detectó que el total declarado (55) no coincidía con el conteo real. Se verificó historia por historia.</contexto>
+    <descubrimiento>El documento tenía 71 historias (A0–A7, R1–R3) pero "Total de historias" decía 55. El total fue escrito en una versión anterior y nunca se actualizó. Arquitectura heredó el número sin verificación.</descubrimiento>
+    <regla>Al cerrar cada sesión de USM, contar historias por actividad y por release, sumar subtotales y verificar que "Total" coincida antes de guardar. Arquitectura referencia el total como "las N historias del USM" y ese N se actualiza cada vez que el USM cambia. Nunca asumir que el total declarado es correcto.</regla>
+  </leccion>
+
+  <leccion id="L008" fecha="2026-05-25" worker="disenador_ux" categoria="patron" tags="ownership,bounded-context,usm" recurrencia="1" estado="activo">
+    <contexto>Ambigüedad de ownership de E5.0 "Dar de alta una nueva disciplina al catálogo", que aparecía en A2 R1 con numeración de A5.</contexto>
+    <descubrimiento>Cuando una historia tiene numeración de una actividad (E5.x) pero aparece en otra (A2), el ownership se decide por el bounded context de la arquitectura, no por la ubicación visual. "Dar de alta una disciplina" es configuración institucional (como crear una sede, E5.3), no consulta del catálogo. El módulo propietario es Gestión Institucional (A5), aunque el Catálogo (A2) la lea.</descubrimiento>
+    <regla>Al detectar una historia con numeración inconsistente respecto a su ubicación, resolver el ownership consultando la tabla de bounded contexts de Arquitectura y el tipo de acción (config institucional vs consulta/operación de usuario final). Documentar la decisión con justificación para que el sincronizador la aplique con contexto.</regla>
+  </leccion>
+
+  <leccion id="L009" fecha="2026-05-25" worker="disenador_ux" categoria="flujo_git" tags="handoff,sincronizador,notion,diff" recurrencia="1" estado="activo">
+    <contexto>Iteración v2 del USM. El revisor (C8) detectó que el handoff del UX prescribía "cambiar 'E2.1–E2.8' por 'E2.1–E2.8'": texto literal idéntico antes y después. Un sincronizador haciendo buscar-reemplazar reportaría "nada que cambiar", cuando el cambio existe pero es semántico (nota al pie).</contexto>
+    <descubrimiento>Hay dos clases de cambios en un handoff a sincronizador_notion: (a) texto literal (buscar X, reemplazar por Y) y (b) semánticos (la celda dice lo mismo pero significa otra cosa, o falta una nota al pie). Si el XML los mezcla sin distinguirlos, el sincronizador aplica parcialmente y declara éxito prematuro.</descubrimiento>
+    <regla>En todo handoff a sincronizador_notion, etiquetar cada cambio: reemplazo_textual | eliminar_linea | insertar_linea | nota_aclaratoria. Para nota_aclaratoria indicar: (1) que el texto literal NO cambia, (2) qué hacer si la nota existe, (3) qué hacer si no existe. Si un cambio sobre el doc de un rol proviene del XML de otro rol, declarar el origen para que el sincronizador no espere un input que no llega.</regla>
+  </leccion>
+</memory_shard>

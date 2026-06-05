@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<memory_shard nombre="cross">
+  <!--
+    Lecciones TRANSVERSALES: aplican a todos los workers (doc y dev).
+    Foco: fuente canónica del stack, consistencia entre documentos, cruces de números.
+    TODOS los roles leen este shard además del suyo.
+
+    Formato de lección:
+    <leccion id="..." fecha="YYYY-MM-DD" worker="..." categoria="..." tags="..." recurrencia="N" estado="activo|distilado">
+      <contexto>...</contexto>
+      <descubrimiento>...</descubrimiento>
+      <regla>...</regla>
+    </leccion>
+  -->
+
+  <leccion id="L001" fecha="2026-05-25" worker="project_manager" categoria="gotcha" tags="conteo,consistencia,usm,arquitectura" recurrencia="2" estado="activo">
+    <contexto>Auditoría general de Notion previo a Planning Poker y Plan de Pruebas. Se leyeron las 13 páginas del proyecto SIGDU.</contexto>
+    <descubrimiento>El USM declaraba "Total de historias: 55" pero el conteo real da 71. La página de Arquitectura heredó el mismo 55. El stack era inconsistente entre documentos (Supabase vs PostgreSQL). Proyecciones financieras con churn distinto (5% vs 8.3%) y escenarios con mismo nombre y números diferentes.</descubrimiento>
+    <regla>Después de cada iteración del USM, verificar el conteo manual y cruzarlo con la tabla de cobertura de Arquitectura. Los documentos financieros declaran el supuesto base. El stack se declara en un solo lugar canónico (Guía Técnica) y el resto lo referencia.</regla>
+  </leccion>
+
+  <leccion id="L003" fecha="2026-05-25" worker="arquitecto" categoria="gotcha" tags="stack,canonico,schema-per-tenant,baas" recurrencia="2" estado="activo">
+    <contexto>Resolución de la inconsistencia entre BC §4-5 (mencionaban Supabase) y la Guía Técnica (PostgreSQL 16 + SQLAlchemy). Hallazgo C2 de la auditoría del PM.</contexto>
+    <descubrimiento>Cuando el stack se menciona en múltiples secciones sin fuente canónica explícita, cada worker escribe el proveedor que le es familiar. BC §4-5 quedaron con "Supabase" de una versión temprana; la Guía Técnica evolucionó a PostgreSQL puro. Nadie detectó la divergencia porque cada uno leía solo su sección. Además: Supabase BaaS es INCOMPATIBLE con schema-per-tenant basado en search_path dinámico que la arquitectura ya había decidido.</descubrimiento>
+    <regla>El stack se declara en UN solo lugar canónico (Guía Técnica — sección Stack). Los demás docs referencian "ver Guía Técnica §X". Antes de cerrar BC o Canvas, cruzar el stack contra la Guía Técnica; si difiere es DIVERGENCIA DE NOTION. Al elegir un modelo de aislamiento (schema-per-tenant, RLS, database-per-tenant) verificar explícitamente que el proveedor de BD lo soporta nativamente; no asumir compatibilidad por usar ambos PostgreSQL.</regla>
+  </leccion>
+
+  <leccion id="L004" fecha="2026-05-25" worker="business_analyst" categoria="gotcha" tags="canvas,bc,mrr,consistencia-numerica" recurrencia="1" estado="activo">
+    <contexto>Hallazgo I3: la proyección "conservadora" del Canvas (10 clientes Pro = $2,000 MRR) superaba al escenario OPTIMISTA del BC §3 (12 clientes a $179 = $2,148 MRR). La inconsistencia pasó porque Canvas y BC se redactaron en sesiones distintas sin cruzar números.</contexto>
+    <descubrimiento>El Canvas tiene su propia sección de ingresos con proyecciones que no referencian al BC. Cada actualización del BC desincroniza el Canvas. En defensa oral, un evaluador puede señalar la contradicción.</descubrimiento>
+    <regla>El Canvas NO debe tener proyecciones numéricas propias de clientes o MRR. Referencia al BC ("ver §3") o se limita a rangos de precio por plan. Cualquier número de clientes/MRR pertenece al BC §6. Al actualizar proyecciones, cruzar Canvas contra BC §6 antes de cerrar.</regla>
+  </leccion>
+
+  <leccion id="L007" fecha="2026-05-25" worker="business_analyst" categoria="gotcha" tags="taxonomia,usm,plan-pruebas,codigos" recurrencia="1" estado="activo">
+    <contexto>Iteración v2 del Plan de Pruebas (observación C4): §1.2 usaba códigos A1/A3/A4/A5 con significado de backend distinto de la taxonomía del USM (A0 Onboarding, A1 Acceso, A2 Catálogo, A3 Participar, A4 Operar Clases, A5 Gestión Institucional, A6 Analizar). El total coincidía por casualidad y omitía USM A2 y A5.</contexto>
+    <descubrimiento>Cuando un documento de QA o implementación reusa códigos del USM con significado distinto (A1 backend ≠ A1 USM) se produce una colisión silenciosa: el documento parece consistente pero el cruce con el USM lo refuta. Un evaluador externo siempre cruza ambos documentos.</descubrimiento>
+    <regla>Todo documento secundario que referencie historias del USM usa EXCLUSIVAMENTE los códigos del USM (A0–A6, E*.*). Si conviene agrupar de otra forma (por módulo backend, sprint), agregar tabla de equivalencia "Vista interna → USM canónico" con las historias USM cubiertas por cada grupo. Antes de entregar, sumar historias USM cubiertas y comparar contra el total declarado del release.</regla>
+  </leccion>
+</memory_shard>

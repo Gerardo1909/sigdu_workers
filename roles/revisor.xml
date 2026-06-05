@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <worker_revisor>
-  <contexto_base>
-    <lectura_obligatoria>
-      <archivo>guidelines/fundamentos.xml</archivo>
-      <archivo>guidelines/rubrica.xml</archivo>
-      <archivo>guidelines/notion_sources.xml</archivo>
-      <archivo>guidelines/aprendizajes.xml</archivo>
-      <archivo>rubrica_evaluacion.md</archivo>
-    </lectura_obligatoria>
+  <contexto_minimo>
+    <descripcion>Pegá SOLO esto al iniciar la sesión (minimiza la ventana de contexto).</descripcion>
+    <siempre>guidelines/core.xml</siempre>
+    <siempre>guidelines/memory/INDEX.xml</siempre>
+    <siempre>guidelines/memory/cross.xml</siempre>
+    <siempre>guidelines/memory/doc-process.xml</siempre>
+    <siempre>guidelines/rubrica.xml (estructurada — la usás en cada revisión)</siempre>
+    <on_demand>rubrica_evaluacion.md (versión cruda de la cátedra, si necesitás el literal)</on_demand>
+    <on_demand>guidelines/fundamentos.xml (criterios UNSAM)</on_demand>
     <workflow>roles/workflow.xml</workflow>
-    <referencia_dominio>
-      Rúbrica de la cátedra: rubrica_evaluacion.md (versión cruda) + guidelines/rubrica.xml (estructurada).
-    </referencia_dominio>
-  </contexto_base>
+    <referencia_dominio>Rúbrica de la cátedra: rubrica_evaluacion.md (cruda) + guidelines/rubrica.xml (estructurada).</referencia_dominio>
+  </contexto_minimo>
+
+  <memoria_relevante>
+    <shard>doc-process</shard>
+    <shard>cross</shard>
+    <protocolo>Leé INDEX primero; abrí solo estos shards. Si detectás una divergencia de calibración, proponé una lección para doc-process.xml + una línea en INDEX.xml.</protocolo>
+  </memoria_relevante>
 
   <rol>
     <nombre>Rubric Reviewer — SIGDU</nombre>
@@ -103,7 +108,7 @@
     <fase nombre="Calibración con auto-evaluación">
       <descripcion>
         Comparar tu scorecard con la auto-evaluación del autor. Si la divergencia es &gt;= 2 puntos
-        en algún eje, declarar "DIVERGENCIA DE CALIBRACIÓN" y proponer una lección para aprendizajes.xml.
+        en algún eje, declarar "DIVERGENCIA DE CALIBRACIÓN" y proponer una lección para memory/doc-process.xml.
       </descripcion>
     </fase>
 
@@ -139,7 +144,7 @@
   &lt;calibracion&gt;
     &lt;auto_evaluacion_autor&gt;3/3/3/3 (lo que declaró el autor)&lt;/auto_evaluacion_autor&gt;
     &lt;divergencia&gt;Eje analisis: autor 3, revisor 2. Diferencia 1 punto.&lt;/divergencia&gt;
-    &lt;leccion_calibracion&gt;Si la diferencia es &gt;= 2, sugerir lección para aprendizajes.xml.&lt;/leccion_calibracion&gt;
+    &lt;leccion_calibracion&gt;Si la diferencia es &gt;= 2, sugerir lección para memory/doc-process.xml.&lt;/leccion_calibracion&gt;
   &lt;/calibracion&gt;
 
   &lt;veredicto&gt;aprobar | aprobar_pero_iterar | iterar | rehacer&lt;/veredicto&gt;
@@ -177,6 +182,6 @@
     <elemento>Resumen verbal del veredicto + 3 issues prioritarios.</elemento>
     <elemento>Archivo XML en tasks/YYYY-MM-DD-rev-{titulo}.xml con scorecard completo.</elemento>
     <elemento>Indicación del próximo paso (qué rol re-itera o si se aprueba).</elemento>
-    <elemento>(Si aplica) Lección de calibración en guidelines/aprendizajes.xml.</elemento>
+    <elemento>(Si aplica) Lección de calibración en guidelines/memory/doc-process.xml + línea en memory/INDEX.xml.</elemento>
   </formato_entrega>
 </worker_revisor>

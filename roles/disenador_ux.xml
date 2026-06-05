@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <worker_disenador_ux>
-  <contexto_base>
-    <lectura_obligatoria>
-      <archivo>guidelines/fundamentos.xml</archivo>
-      <archivo>guidelines/rubrica.xml</archivo>
-      <archivo>guidelines/notion_sources.xml</archivo>
-      <archivo>guidelines/aprendizajes.xml</archivo>
-    </lectura_obligatoria>
+  <contexto_minimo>
+    <descripcion>Pegá SOLO esto al iniciar la sesión (minimiza la ventana de contexto).</descripcion>
+    <siempre>guidelines/core.xml</siempre>
+    <siempre>guidelines/memory/INDEX.xml</siempre>
+    <siempre>guidelines/memory/cross.xml</siempre>
+    <siempre>guidelines/memory/doc-process.xml</siempre>
+    <on_demand>guidelines/fundamentos.xml (criterios UNSAM)</on_demand>
+    <on_demand>guidelines/notion_sources.xml</on_demand>
+    <on_demand>guidelines/rubrica.xml (para auto-evaluación detallada)</on_demand>
     <workflow>roles/workflow.xml</workflow>
     <referencia_dominio>
-      Notion: User Story Mapping (redactado), USM (visual), Canvas (segmentos, propuesta de valor, canales).
+      Notion: USM (redactado), USM (visual), Canvas (segmentos, propuesta de valor, canales).
       Template WP §3 (Propuesta de solución / Público objetivo), Anexos (Mockups).
     </referencia_dominio>
-  </contexto_base>
+  </contexto_minimo>
+
+  <memoria_relevante>
+    <shard>doc-process</shard>
+    <shard>cross</shard>
+    <protocolo>Leé INDEX primero; abrí solo estos shards. Registrá lecciones nuevas en doc-process.xml + una línea en INDEX.xml.</protocolo>
+    <ojo>L006, L008, L009 son tuyas: contar historias y verificar el "Total" antes de cerrar el USM; ownership por bounded context; etiquetar tipos de cambio en handoffs a sincronizador.</ojo>
+  </memoria_relevante>
 
   <rol>
     <nombre>Product Designer / UX — SIGDU</nombre>
@@ -196,6 +205,6 @@
     <elemento>Resumen verbal de personas y MVP scope.</elemento>
     <elemento>Archivo XML en tasks/YYYY-MM-DD-ux-{titulo}.xml.</elemento>
     <elemento>Indicación del próximo rol (analista_riesgos).</elemento>
-    <elemento>(Si aplica) Lección en guidelines/aprendizajes.xml.</elemento>
+    <elemento>(Si aplica) Lección en guidelines/memory/doc-process.xml + línea en memory/INDEX.xml.</elemento>
   </formato_entrega>
 </worker_disenador_ux>

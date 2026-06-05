@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<memory_index>
+  <!--
+    Índice liviano de TODAS las lecciones. Se lee SIEMPRE al inicio (es barato: 1 línea por lección).
+    Routing: cada worker lee este índice y luego abre SOLO el/los shard(s) que su rol indica
+    en <memoria_relevante>. No hace falta pegar todos los shards.
+
+    Shards:
+      doc-process.xml  -> roles doc: project_manager, business_analyst, arquitecto,
+                          disenador_ux, analista_riesgos, redactor, revisor, presentador
+      cross.xml        -> transversal: stack canónico, consistencia entre documentos (lo leen TODOS)
+      backend.xml      -> backend_dev
+      frontend.xml     -> frontend_dev
+      qa.xml           -> qa_testing, code_reviewer
+
+    Campos de cada línea: id · shard · worker · categoria · estado · hook(resumen accionable)
+    estado: activo (leer en runtime) | distilado (ya plegado a un prompt; conservado para auditoría, NO leer en runtime)
+    Categorías: bug · patron · gotcha · optimizacion · seguridad · integracion · flujo_proyecto · flujo_git
+  -->
+
+  <metadata>
+    <ultima_actualizacion>2026-06-05</ultima_actualizacion>
+    <responsable>curador_memoria (consolida) + cada worker (agrega su lección al cerrar)</responsable>
+    <umbral_destilacion>recurrencia &gt;= 3 o lección marcada estable -> el curador la pliega al prompt y la marca estado="distilado"</umbral_destilacion>
+  </metadata>
+
+  <lecciones>
+    <l id="L001" shard="cross" worker="project_manager" categoria="gotcha" estado="activo">Conteos declarados (ej. "Total de historias: 55") suelen quedar desactualizados; contar manual y cruzar entre documentos.</l>
+    <l id="L002" shard="doc-process" worker="project_manager" categoria="patron" estado="activo">NUNCA declarar que UNSAM es solo cliente de validación; rompe nivel 3 de rúbrica. SIGDU resuelve un problema real en UNSAM y eso habilita la expansión.</l>
+    <l id="L003" shard="cross" worker="arquitecto" categoria="gotcha" estado="activo">Stack canónico en UN solo lugar (Guía Técnica); demás docs referencian. Verificar que el proveedor de BD soporte el modelo de aislamiento (schema-per-tenant) antes de elegirlo.</l>
+    <l id="L004" shard="cross" worker="business_analyst" categoria="gotcha" estado="activo">El Canvas NO debe tener proyecciones numéricas propias de clientes/MRR; debe referenciar al BC §6 (fuente financiera canónica).</l>
+    <l id="L005" shard="doc-process" worker="business_analyst" categoria="patron" estado="activo">Cada supuesto financiero (churn, CAC, precio, conversión) tiene UN valor canónico declarado; el target a futuro se marca como tal. §3 referencia a §6.</l>
+    <l id="L006" shard="doc-process" worker="disenador_ux" categoria="bug" estado="activo">Al cerrar el USM, contar historias por actividad y release y verificar el campo "Total" antes de guardar. Arquitectura referencia ese N.</l>
+    <l id="L007" shard="cross" worker="business_analyst" categoria="gotcha" estado="activo">Documentos secundarios (Plan de Pruebas/Sprint/Release) usan EXCLUSIVAMENTE códigos USM (A0–A6, E*.*). Si agrupan distinto, agregar tabla de equivalencia "interna → USM".</l>
+    <l id="L008" shard="doc-process" worker="disenador_ux" categoria="patron" estado="activo">Ownership de una historia con numeración inconsistente se resuelve por bounded context de Arquitectura y tipo de acción (config institucional vs consulta/operación), no por ubicación visual.</l>
+    <l id="L009" shard="doc-process" worker="disenador_ux" categoria="flujo_git" estado="activo">En handoffs a sincronizador_notion etiquetar cada cambio: reemplazo_textual | eliminar_linea | insertar_linea | nota_aclaratoria. Declarar el origen si el cambio sobre un doc proviene del XML de otro rol.</l>
+  </lecciones>
+</memory_index>

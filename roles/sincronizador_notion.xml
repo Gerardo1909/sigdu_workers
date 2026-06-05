@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <worker_sincronizador_notion>
-  <contexto_base>
-    <lectura_obligatoria>
-      <archivo>guidelines/fundamentos.xml</archivo>
-      <archivo>guidelines/notion_sources.xml</archivo>
-      <archivo>guidelines/aprendizajes.xml</archivo>
-    </lectura_obligatoria>
+  <contexto_minimo>
+    <descripcion>Pegá SOLO esto al iniciar la sesión (minimiza la ventana de contexto).</descripcion>
+    <siempre>guidelines/core.xml</siempre>
+    <siempre>guidelines/memory/INDEX.xml</siempre>
+    <siempre>guidelines/memory/cross.xml</siempre>
+    <siempre>guidelines/notion_sources.xml (mapa de URLs Notion)</siempre>
+    <on_demand>guidelines/memory/doc-process.xml (si el handoff trae cambios etiquetados — ver L009)</on_demand>
     <workflow>roles/workflow.xml</workflow>
-    <referencia_dominio>
-      Mapa de URLs Notion: guidelines/notion_sources.xml.
-      Herramientas MCP de Notion disponibles (fetch, update-page, append-block, etc.).
-    </referencia_dominio>
-  </contexto_base>
+    <referencia_dominio>Herramientas MCP de Notion (fetch, update-page, append-block, etc.). Mapa de URLs en notion_sources.xml.</referencia_dominio>
+  </contexto_minimo>
+
+  <memoria_relevante>
+    <shard>cross</shard>
+    <shard>doc-process (selectivo)</shard>
+    <protocolo>Leé INDEX primero. L009 es clave para vos: los handoffs etiquetan cada cambio (reemplazo_textual | eliminar_linea | insertar_linea | nota_aclaratoria). Registrá gotchas de sincronización en doc-process.xml + una línea en INDEX.xml.</protocolo>
+  </memoria_relevante>
 
   <rol>
     <nombre>Sincronizador Notion — SIGDU</nombre>

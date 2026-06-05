@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<memory_shard nombre="backend">
+  <!--
+    Lecciones de BACKEND (backend_dev): FastAPI, SQLAlchemy 2.0 async, Alembic, Pydantic v2,
+    PostgreSQL 16 schema-per-tenant. backend_dev lee este shard + cross.xml.
+
+    Vacío de lecciones "aprendidas" todavía: backend_dev las agrega al cerrar sesión y
+    registra la línea en memory/INDEX.xml. Cuando una llega a recurrencia>=3, el curador_memoria
+    la pliega a roles/backend_dev.xml y la marca estado="distilado".
+
+    Formato de lección:
+    <leccion id="..." fecha="YYYY-MM-DD" worker="backend_dev" categoria="bug|patron|gotcha|optimizacion|seguridad|integracion" tags="..." recurrencia="N" estado="activo|distilado">
+      <contexto>...</contexto><descubrimiento>...</descubrimiento><regla>...</regla>
+    </leccion>
+  -->
+</memory_shard>

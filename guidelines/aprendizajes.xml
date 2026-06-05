@@ -1,178 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<aprendizajes_compartidos>
+<aprendizajes_compartidos estado="MIGRADO">
   <!--
-    Este archivo acumula lecciones aprendidas por todos los workers entre sesiones.
-    Cada worker debe:
-      1. Leer este archivo al inicio de la sesión para contextualizar lecciones previas.
-      2. Agregar nuevas entradas al final (antes del cierre </aprendizajes_compartidos>)
-         cuando ocurran correcciones, descubrimientos o patrones nuevos.
+    ESTE ARCHIVO FUE MIGRADO. No agregues lecciones acá.
 
-    Categorías válidas: bug, patron, gotcha, optimizacion, seguridad, integracion, flujo_git
-    Workers válidos: backend, arquitecto, reviewer, product_manager, qa
+    La memoria ahora vive sharded por tipo de tarea en guidelines/memory/:
+      - INDEX.xml        índice liviano (1 línea por lección) — leer SIEMPRE
+      - cross.xml        transversales (stack canónico, consistencia) — leer SIEMPRE
+      - doc-process.xml  roles documentales
+      - backend.xml      backend_dev
+      - frontend.xml     frontend_dev
+      - qa.xml           qa_testing, code_reviewer
 
-    Formato de una nueva lección:
+    Las 9 lecciones originales (L001–L009) están migradas: L001/L003/L004/L007 en cross.xml,
+    el resto en doc-process.xml. El historial completo de este archivo está en git.
 
-    <leccion fecha="YYYY-MM-DD" worker="..." categoria="...">
-      <contexto>Qué situación dio origen al aprendizaje (ticket, PR, debugging session).</contexto>
-      <descubrimiento>Qué se descubrió que no estaba documentado o contradecía lo conocido.</descubrimiento>
-      <regla>Regla accionable derivada del descubrimiento. Cómo evitar reincidir o cómo aprovechar el patrón.</regla>
-    </leccion>
+    Cada worker lee solo el/los shard(s) que indica su <memoria_relevante>, según core.xml y workflow.xml.
+    El loop de destilación (recurrencia>=3 -> plegar al prompt) lo opera roles/curador_memoria.xml.
   -->
-
-  <leccion fecha="2026-05-25" worker="project_manager" categoria="gotcha">
-    <contexto>Auditoría general de Notion previo a Planning Poker y Plan de Pruebas. Se leyeron
-    las 13 páginas completas del proyecto SIGDU.</contexto>
-    <descubrimiento>El USM declaraba "Total de historias: 55" pero el conteo real da 71. La página
-    de Arquitectura también decía 55. El stack tecnológico era inconsistente entre documentos:
-    BC §4-5 mencionaban Supabase; la Guía Técnica usaba PostgreSQL puro. Las proyecciones
-    financieras entre §3 y §6 usaban churn rates distintos (5% vs 8.3%) y escenarios con
-    el mismo nombre pero números diferentes.</descubrimiento>
-    <regla>Después de cada iteración del USM, verificar manualmente el conteo y cruzarlo con
-    la tabla de cobertura de Arquitectura. Los documentos financieros deben declarar en qué
-    supuesto se basan para que dos workers no los actualicen con valores distintos. El stack
-    tecnológico se declara en UN solo lugar canónico (Guía Técnica) y el resto lo referencia.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="project_manager" categoria="patron">
-    <contexto>Evaluación del eje "Solución a problemática UNSAM" durante la auditoría.</contexto>
-    <descubrimiento>BC §1 tenía un callout que decía que UNSAM es solo el piloto y no el mercado
-    objetivo. Esto contradice el criterio de rúbrica nivel 3. El test rápido de rúbrica
-    (¿si quitamos UNSAM la solución tiene sentido idéntico?) daría SÍ porque la narrativa
-    era genérica.</descubrimiento>
-    <regla>NUNCA declarar en el BC que UNSAM es solo un cliente de validación. La narrativa correcta:
-    SIGDU resuelve un problema real en UNSAM, y ese éxito habilita la expansión comercial.
-    Aplicar el test de rúbrica antes de cerrar cualquier versión del BC §1: si quitar "UNSAM"
-    no cambia la narrativa, agregar evidencia específica de la institución.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="arquitecto" categoria="gotcha">
-    <contexto>Resolución de la inconsistencia entre BC §4-5 (mencionaban Supabase) y la Guía
-    Técnica (usaba PostgreSQL 16 + SQLAlchemy). Hallazgo C2 de la auditoría del PM.</contexto>
-    <descubrimiento>Cuando el stack tecnológico se menciona en múltiples secciones de un documento
-    (Business Case, Canvas, Guía Técnica, Arquitectura) sin una fuente canónica explícita, cada
-    worker que edita una sección puede escribir el nombre del proveedor que le resulta familiar
-    o que vio en alguna iteración anterior. En SIGDU: BC §4-5 quedaron con "Supabase" de una
-    versión temprana donde se evaluó el BaaS, mientras la Guía Técnica evolucionó hacia
-    PostgreSQL puro. Ningún worker detectó la divergencia porque cada uno solo leía su sección.
-    Adicionalmente: Supabase BaaS es INCOMPATIBLE con el modelo schema-per-tenant basado en
-    search_path dinámico que la arquitectura ya había decidido. El BC estaba describiendo
-    una tecnología que no podía implementar la arquitectura declarada en el mismo documento.</descubrimiento>
-    <regla>El stack tecnológico se declara en UN solo lugar canónico (Guía Técnica — sección Stack).
-    Todos los demás documentos (BC, Canvas, Arquitectura) referencian esa sección con "ver Guía
-    Técnica §X" en vez de repetir el nombre del proveedor. Antes de cerrar cualquier versión del BC
-    o del Canvas, cruzar el stack declarado contra la Guía Técnica. Si hay diferencia, es una
-    DIVERGENCIA DE NOTION que debe resolverse antes de entregar. Regla adicional: cuando se elige
-    una arquitectura de aislamiento (schema-per-tenant, RLS, database-per-tenant), verificar
-    explícitamente que el BaaS o proveedor de base de datos elegido la soporta nativamente.
-    No asumir compatibilidad por el hecho de que ambos usen PostgreSQL.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="business_analyst" categoria="gotcha">
-    <contexto>Corrección del Canvas (hallazgo I3): la proyección "conservadora" en Revenue Streams
-    declaraba 10 clientes Pro = $2,000 MRR, cifra que superaba al escenario OPTIMISTA del BC §3
-    (12 clientes a $179 = $2,148 MRR). La inconsistencia pasó desapercibida porque el Canvas
-    y el BC se redactaron en sesiones distintas sin cruzar los números al final.</contexto>
-    <descubrimiento>El Canvas tiene su propia sección de ingresos con proyecciones numéricas que
-    no referencian al BC. Cada vez que el BC se actualiza, el Canvas queda desincronizado.
-    En defensa oral, un evaluador puede señalar la contradicción entre los dos documentos sin que
-    el equipo lo haya detectado antes, porque cada documento se revisaba de forma aislada.</descubrimiento>
-    <regla>El Canvas NO debe tener proyecciones numéricas propias de clientes o MRR. Debe referenciar
-    al BC ("ver §3") o limitarse a rangos de precio por plan. Cualquier número concreto de clientes
-    o MRR pertenece al BC §6 (fuente canónica financiera). Al actualizar proyecciones, verificar
-    siempre que el Canvas no contradiga el BC. Si el Canvas tiene un número, cruzarlo contra BC §6
-    antes de cerrar la iteración.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="business_analyst" categoria="patron">
-    <contexto>Resolución del hallazgo I2: churn rate 5% en BC §3 vs 8.3% en BC §6. Ambas secciones
-    usaban el mismo término "churn mensual" con valores distintos y sin nota que explicara la diferencia.
-    El LTV calculado en §6 ($1,788) usaba el 8.3%, pero el target de §3 era 5%, haciendo que el LTV
-    declarado sea incoherente con el target declarado en la misma sección.</contexto>
-    <descubrimiento>Cuando dos secciones del mismo documento usan el mismo indicador con valores
-    distintos sin nota explicativa, el evaluador lo lee como error, no como matiz intencional.
-    El problema no es tener dos valores; el problema es no declarar cuál es el supuesto base
-    (para cálculos) y cuál es el objetivo futuro (a alcanzar).</descubrimiento>
-    <regla>En el BC, cada supuesto financiero (churn, CAC, precio, conversión) debe tener UN valor
-    canónico declarado explícitamente, con nota del tipo "este es el supuesto base para todos los
-    cálculos". Si hay un target de largo plazo distinto, se declara como tal en la misma tabla.
-    La fuente canónica de supuestos es §6; §3 debe referenciar a §6 o usar exactamente los mismos
-    valores. No actualizar uno sin actualizar el otro simultáneamente.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="disenador_ux" categoria="bug">
-    <contexto>Corrección del USM previo a Planning Poker. El PM detectó que el total declarado
-    (55) no coincidía con el conteo real. Se verificó historia por historia desde la página
-    Notion "USM redactado".</contexto>
-    <descubrimiento>El documento tenía 71 historias (A0 a A7, R1 a R3) pero el campo
-    "Total de historias" decía 55 — diferencia de 16. La causa probable: el total fue escrito
-    durante una versión anterior del USM y nunca se actualizó al agregar nuevas actividades
-    o historias. La página de Arquitectura heredó el mismo número incorrecto sin verificación
-    independiente.</descubrimiento>
-    <regla>Al cerrar cada sesión de USM, contar explícitamente las historias por actividad
-    y por release, sumar los subtotales y verificar que el campo "Total" coincida antes de
-    guardar en Notion. El documento de Arquitectura debe referenciar el total como "las N
-    historias del USM" y ese N debe actualizarse cada vez que el USM cambia. Nunca asumir
-    que el total declarado en un documento fuente es correcto: siempre cruzar con el conteo
-    manual de ítems.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="business_analyst" categoria="gotcha">
-    <contexto>Iteración v2 del Plan de Pruebas tras observación C4 del revisor: el §1.2
-    usaba códigos A1/A3/A4/A5 con significado del backend ("Autenticación / Inscripción /
-    Asistencia / Reportes") distintos de la taxonomía del USM (A0 Onboarding, A1 Acceso,
-    A2 Catálogo, A3 Participar, A4 Operar Clases, A5 Gestión Institucional, A6 Analizar).
-    El total (25) coincidía por casualidad y el alcance omitía USM A2 y USM A5 — gap
-    invisible para auto-revisión, evidente al cruzar dos documentos.</contexto>
-    <descubrimiento>Cuando un documento de QA o de implementación necesita nombrar
-    historias, suele aparecer la tentación de inventar una taxonomía propia (por módulo
-    de backend, por feature flag, por sprint). Si esa taxonomía reusa códigos del USM con
-    significado distinto (A1 backend ≠ A1 USM), se produce una colisión silenciosa: el
-    documento parece consistente internamente pero el cruce con el USM lo refuta. El
-    test de rúbrica de un evaluador externo siempre cruza ambos documentos; el
-    auto-revisor del documento aislado, no.</descubrimiento>
-    <regla>Cuando un documento secundario (Plan de Pruebas, Plan de Sprint, Plan de
-    Release) referencie historias del USM, debe usar EXCLUSIVAMENTE los códigos del
-    USM (A0–A6, E*.*). Si por organización interna del equipo conviene agrupar de otra
-    manera (ej. por módulo backend), agregar una tabla de equivalencia explícita "Vista
-    interna → USM canónico" en el mismo documento, con la lista de historias USM cubiertas
-    por cada agrupación interna. Antes de entregar, verificar la cobertura sumando
-    historias USM cubiertas y comparando contra el total declarado del release.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="disenador_ux" categoria="patron">
-    <contexto>Resolución de la ambigüedad de ownership de E5.0 "Dar de alta una nueva disciplina
-    al catálogo", que aparecía en A2 R1 con numeración de A5.</contexto>
-    <descubrimiento>Cuando una historia tiene numeración de una actividad (E5.x) pero aparece
-    físicamente en otra (A2), la decisión de ownership debe basarse en el bounded context de
-    la arquitectura, no en la ubicación visual en el documento. "Dar de alta una disciplina"
-    es configuración institucional (análoga a crear una sede, E5.3), no una acción de consulta
-    del catálogo. El módulo propietario del CRUD administrativo de Disciplina es Gestión
-    Institucional (A5), aunque el Catálogo Deportivo (A2) la lea y exponga al público.</descubrimiento>
-    <regla>Al detectar una historia con numeración inconsistente respecto a su ubicación en
-    el USM, resolver el ownership consultando la tabla de bounded contexts de la Arquitectura
-    y el tipo de acción (¿es configuración institucional o consulta/operación de usuario final?).
-    Documentar la decisión con justificación en el output para que el sincronizador_notion
-    aplique el cambio con contexto completo.</regla>
-  </leccion>
-
-  <leccion fecha="2026-05-25" worker="disenador_ux" categoria="flujo_git">
-    <contexto>Iteración v2 del USM tras revisión cruzada. El revisor (C8) detectó que el
-    bloque cambios_requeridos del UX prescribía "cambiar 'E2.1–E2.8' por 'E2.1–E2.8'" en la
-    fila A2 de Arq §7: texto literal idéntico antes y después. Un sincronizador automático
-    haciendo buscar-reemplazar no encontraría diff y reportaría "nada que cambiar", cuando en
-    realidad el cambio existe pero es semántico (nota al pie / interpretación de la celda).</contexto>
-    <descubrimiento>Hay dos clases de cambios que un handoff al sincronizador_notion puede
-    pedir: (a) cambios de texto literal (buscar X, reemplazar por Y) y (b) cambios semánticos
-    (la celda dice lo mismo pero significa otra cosa, o falta una nota al pie que aclare la
-    interpretación). Si el XML los mezcla sin distinguirlos, el sincronizador puede aplicar
-    parcialmente y declarar éxito prematuramente.</descubrimiento>
-    <regla>En todo handoff a sincronizador_notion, etiquetar cada cambio con tipo:
-    "reemplazo_textual", "eliminar_linea", "insertar_linea" o "nota_aclaratoria". Para los de
-    tipo "nota_aclaratoria" indicar explícitamente: (1) que el texto literal NO cambia,
-    (2) qué hacer si la nota al pie existe (reemplazarla), (3) qué hacer si no existe (crearla).
-    Adicional: cuando un cambio sobre el documento de un rol (ej. Arquitectura) proviene del
-    XML de OTRO rol (ej. UX), declarar el origen para que el sincronizador no espere un input
-    paralelo que no va a llegar.</regla>
-  </leccion>
-
 </aprendizajes_compartidos>
